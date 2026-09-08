@@ -1,0 +1,16 @@
+{
+  "name": "Root & Rise",
+  "short_name": "Root & Rise",
+  "description": "Homeschool tracking — lessons, hours, notes, books and monthly reports.",
+  "start_url": "./Root%20%26%20Rise%20App.dc.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5ead8",
+  "theme_color": "#f5ead8",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

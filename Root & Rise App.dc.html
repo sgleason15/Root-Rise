@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5ead8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Root &amp; Rise">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="_ds/organic-8dc64fb3-8d40-402b-82f6-213ec1b5a0da/styles.css">
+<script src="_ds/organic-8dc64fb3-8d40-402b-82f6-213ec1b5a0da/_ds_bundle.js"></script>
+<style>
+html,body{height:100%;background:var(--color-bg);overscroll-behavior:none;-webkit-text-size-adjust:100%}
+input,textarea,button,select{font-family:var(--font-body)}
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent-600)}
+.rr-scroll::-webkit-scrollbar{width:0;height:0}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center;background:var(--color-neutral-200)">
+<div style="width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;background:var(--color-bg);position:relative">
+
+<div style="flex:none;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;display:flex;align-items:center;gap:10px;background:var(--color-bg)">
+<sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ back }}" class="btn btn-secondary" style="width:36px;height:36px;padding:0;border-radius:999px;flex:none;font-size:18px">‹</button>
+</sc-if>
+<div style="flex:1;min-width:0">
+<div style="font-family:var(--font-heading);font-size:20px;line-height:1.15;color:var(--color-accent-700)">{{ title }}</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700)">{{ subtitle }}</div>
+</div>
+<button onClick="{{ goSetup }}" style="width:36px;height:36px;flex:none;border:none;cursor:pointer;border-radius:999px;background:var(--color-accent-2);color:#fff;font-family:var(--font-heading);font-size:15px" style-hover="background:var(--color-accent-2-600)">{{ initial }}</button>
+</div>
+
+<div class="rr-scroll" style="flex:1;overflow-y:auto;padding:4px 18px 22px;-webkit-overflow-scrolling:touch">
+
+<sc-if value="{{ showInstall }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:14px 15px;margin-bottom:16px">
+<div style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-800)">Put it on your home screen</div>
+<div style="font-size:12.5px;line-height:1.5;color:var(--color-accent-900);margin:4px 0 10px">In Safari, tap Share → Add to Home Screen. It then opens full-screen and works with no signal.</div>
+<button onClick="{{ dismissInstall }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;padding:7px 14px">Got it</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;gap:9px">
+<div style="flex:1;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 13px">
+<div style="font-family:var(--font-heading);font-size:22px;line-height:1">{{ weekHours }}</div>
+<div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:2px">hours this week</div>
+</div>
+<div style="flex:1;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 13px">
+<div style="font-family:var(--font-heading);font-size:22px;line-height:1">{{ monthLessons }}</div>
+<div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:2px">lessons this month</div>
+</div>
+<div style="flex:1;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 13px">
+<div style="font-family:var(--font-heading);font-size:22px;line-height:1">{{ booksDone }}</div>
+<div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:2px">books finished</div>
+</div>
+</div>
+
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+<div style="font-family:var(--font-heading);font-size:17px">Today's lessons</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700)">{{ todayProgress }}</div>
+</div>
+<sc-if value="{{ todayEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">{{ todayEmptyLine }}</div>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ todayLessons }}" as="l" hint-placeholder-count="5">
+<button onClick="{{ l.open }}" style="width:100%;text-align:left;border:none;cursor:pointer;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 14px;display:flex;align-items:center;gap:11px" style-hover="background:var(--color-neutral-300)">
+<span style="{{ l.dot }}"></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700)">{{ l.subject }} · {{ l.ref }}</span>
+<span style="display:block;font-size:14.5px;line-height:1.3;color:var(--color-text)">{{ l.line }}</span>
+</span>
+<span style="{{ l.chip }}">{{ l.chipLabel }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div>
+<div style="font-family:var(--font-heading);font-size:17px;margin-bottom:9px">Also today</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ todayActs }}" as="a" hint-placeholder-count="1">
+<div style="border:1.5px dashed var(--color-accent-2-400);border-radius:var(--radius-lg);padding:11px 14px;display:flex;align-items:center;gap:10px">
+<span style="width:8px;height:8px;border-radius:999px;background:var(--color-accent-2);flex:none"></span>
+<span style="flex:1;font-size:14px">{{ a.name }}</span>
+<button onClick="{{ a.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px">×</button>
+</div>
+</sc-for>
+<sc-if value="{{ noActs }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12.5px;color:var(--color-neutral-700)">Nothing else scheduled. Add activities on the Week tab.</div>
+</sc-if>
+</div>
+</div>
+
+<button onClick="{{ goAhead }}" style="width:100%;text-align:left;cursor:pointer;border:none;background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px" style-hover="background:var(--color-accent-300)">
+<span style="flex:1">
+<span style="display:block;font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Look ahead · {{ aheadLabel }}</span>
+<span style="display:block;font-size:12.5px;color:var(--color-accent-900);margin-top:2px">{{ aheadSummary }}</span>
+</span>
+<span style="font-size:19px;color:var(--color-accent-800)">›</span>
+</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isWeek }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="font-family:var(--font-heading);font-size:17px">{{ weekLabel }}</div>
+<div style="display:flex;gap:6px">
+<button onClick="{{ prevWeek }}" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:999px">‹</button>
+<button onClick="{{ thisWeek }}" class="btn btn-secondary" style="border-radius:999px;font-size:12px;padding:7px 12px">Today</button>
+<button onClick="{{ nextWeek }}" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:999px">›</button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+<sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+<button onClick="{{ d.pick }}" style="{{ d.col }}">
+<span style="display:block;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ d.dow }}</span>
+<span style="{{ d.num }}">{{ d.date }}</span>
+<span style="display:flex;flex-direction:column;gap:3px;margin-top:5px;min-height:104px">
+<sc-for list="{{ d.chips }}" as="c" hint-placeholder-count="3">
+<span style="{{ c.style }}">{{ c.label }}</span>
+</sc-for>
+</span>
+</button>
+</sc-for>
+</div>
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:16px;margin-bottom:10px">{{ selDayLabel }}</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ selDayItems }}" as="i" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="{{ i.dot }}"></span>
+<span style="flex:1;font-size:13.5px">{{ i.label }}</span>
+<span style="font-size:11.5px;color:var(--color-neutral-700)">{{ i.right }}</span>
+<sc-if value="{{ i.removable }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ i.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px">×</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:7px;margin-top:13px">
+<input class="input" placeholder="Add an activity — swim, co-op, library…" value="{{ actDraft }}" onChange="{{ setActDraft }}" style="border-radius:999px;flex:1">
+<button onClick="{{ addAct }}" class="btn btn-primary" style="border-radius:999px">Add</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLesson }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:9px">
+<span style="{{ lesson.dot }}"></span>
+<span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700)">{{ lesson.subject }}</span>
+</div>
+<div style="font-family:var(--font-heading);font-size:26px;line-height:1.1;margin-top:-8px">{{ lesson.ref }}</div>
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px">
+<div style="font-family:var(--font-heading);font-size:44px;line-height:1">{{ clock }}</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:-8px">{{ timerNote }}</div>
+<div style="display:flex;gap:8px;width:100%">
+<button onClick="{{ toggleTimer }}" style="{{ timerBtn }}" style-hover="opacity:.9">{{ timerLabel }}</button>
+<button onClick="{{ resetTimer }}" class="btn btn-secondary" style="border-radius:999px;padding:12px 18px">Reset</button>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Before · the plan</div>
+<textarea class="input" placeholder="What we'll do, and what to watch for…" value="{{ lesson.before }}" onChange="{{ setBefore }}" style="border-radius:var(--radius-lg);min-height:70px;padding:13px 15px;font-size:13.5px;line-height:1.5"></textarea>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">After · how did it go?</div>
+<textarea class="input" placeholder="A sentence is plenty…" value="{{ lesson.after }}" onChange="{{ setAfter }}" style="border-radius:var(--radius-lg);min-height:82px;padding:13px 15px;font-size:13.5px;line-height:1.5;background:var(--color-accent-100);border-color:var(--color-accent-300)"></textarea>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+<sc-for list="{{ tags }}" as="t" hint-placeholder-count="4">
+<button onClick="{{ t.toggle }}" style="{{ t.style }}" style-hover="opacity:.85">{{ t.label }}</button>
+</sc-for>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Mark this lesson</div>
+<div style="display:flex;gap:7px">
+<sc-for list="{{ statusBtns }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.pick }}" style="{{ s.style }}" style-hover="opacity:.9">{{ s.label }}</button>
+</sc-for>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:8px">{{ advanceNote }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAhead }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:17px;color:var(--color-accent-800)">{{ aheadHeadline }}</div>
+<div style="font-size:12.5px;color:var(--color-accent-900);margin-top:3px">{{ aheadLabel }}</div>
+</div>
+<sc-for list="{{ aheadDays }}" as="d" hint-placeholder-count="5">
+<div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+<div style="font-family:var(--font-heading);font-size:16px">{{ d.day }}</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700)">{{ d.plan }}</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ d.mats }}" as="m" hint-placeholder-count="2">
+<button onClick="{{ m.toggle }}" style="width:100%;cursor:pointer;border:none;background:var(--color-surface);border-radius:var(--radius-md);padding:11px 13px;display:flex;align-items:center;gap:10px" style-hover="background:var(--color-neutral-300)">
+<span style="{{ m.box }}">{{ m.mark }}</span>
+<span style="flex:1;text-align:left;font-size:13.5px">{{ m.name }}</span>
+<span style="{{ m.chip }}">{{ m.src }}</span>
+</button>
+</sc-for>
+<sc-if value="{{ d.noMats }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;color:var(--color-neutral-700)">Nothing extra to gather.</div>
+</sc-if>
+</div>
+<div style="display:flex;gap:7px;margin-top:8px">
+<input class="input" placeholder="Add a material…" value="{{ d.draft }}" onChange="{{ d.setDraft }}" style="border-radius:999px;flex:1;font-size:13px">
+<button onClick="{{ d.add }}" class="btn btn-secondary" style="border-radius:999px">Add</button>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBooks }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:14px">
+<div style="width:52px;height:52px;flex:none;border-radius:999px;background:var(--color-accent-2);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:22px">{{ levelShort }}</div>
+<div style="flex:1">
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-2-900)">{{ levelName }}</div>
+<div style="font-size:12px;color:var(--color-accent-2-900);margin-top:2px">{{ levelNote }}</div>
+</div>
+<div style="display:flex;gap:5px">
+<button onClick="{{ levelDown }}" class="btn btn-secondary" style="width:30px;height:30px;padding:0;border-radius:999px">–</button>
+<button onClick="{{ levelUp }}" class="btn btn-secondary" style="width:30px;height:30px;padding:0;border-radius:999px">+</button>
+</div>
+</div>
+
+<div style="display:flex;gap:4px;background:var(--color-surface);border-radius:999px;padding:4px">
+<sc-for list="{{ bookTabs }}" as="t" hint-placeholder-count="3">
+<button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ books }}" as="b" hint-placeholder-count="3">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 14px;display:flex;gap:12px;align-items:center">
+<div style="{{ b.cover }}"></div>
+<div style="flex:1;min-width:0">
+<div style="font-size:14px;line-height:1.25">{{ b.title }}</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:2px">{{ b.author }}</div>
+<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+<span style="{{ b.levelChip }}">{{ b.level }}</span>
+<span style="{{ b.fitChip }}">{{ b.fit }}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:5px;flex:none">
+<button onClick="{{ b.advance }}" class="btn btn-secondary" style="border-radius:999px;font-size:11.5px;padding:6px 11px">{{ b.action }}</button>
+<button onClick="{{ b.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:11.5px">remove</button>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ noBooks }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12.5px;color:var(--color-neutral-700)">Nothing here yet.</div>
+</sc-if>
+</div>
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:15px;margin-bottom:10px">Add a book</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<input class="input" placeholder="Title" value="{{ bookTitle }}" onChange="{{ setBookTitle }}" style="border-radius:999px">
+<input class="input" placeholder="Author or series" value="{{ bookAuthor }}" onChange="{{ setBookAuthor }}" style="border-radius:999px">
+<div style="display:flex;gap:7px">
+<input class="input" placeholder="Level — e.g. GR C" value="{{ bookLevel }}" onChange="{{ setBookLevel }}" style="border-radius:999px;flex:1">
+<button onClick="{{ addBook }}" class="btn btn-primary" style="border-radius:999px">Add</button>
+</div>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:10px;line-height:1.5">{{ levelHint }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="font-family:var(--font-heading);font-size:17px">{{ monthLabel }}</div>
+<div style="display:flex;gap:6px">
+<button onClick="{{ prevMonth }}" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:999px">‹</button>
+<button onClick="{{ nextMonth }}" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:999px">›</button>
+</div>
+</div>
+
+<div style="display:flex;gap:9px">
+<div style="flex:1;background:var(--color-accent-200);border-radius:var(--radius-lg);padding:13px">
+<div style="font-family:var(--font-heading);font-size:24px;line-height:1;color:var(--color-accent-800)">{{ rHours }}</div>
+<div style="font-size:10.5px;color:var(--color-accent-900);margin-top:3px">hours logged</div>
+</div>
+<div style="flex:1;background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:13px">
+<div style="font-family:var(--font-heading);font-size:24px;line-height:1;color:var(--color-accent-2-900)">{{ rLessons }}</div>
+<div style="font-size:10.5px;color:var(--color-accent-2-900);margin-top:3px">lessons done</div>
+</div>
+<div style="flex:1;background:var(--color-surface);border-radius:var(--radius-lg);padding:13px">
+<div style="font-family:var(--font-heading);font-size:24px;line-height:1">{{ rDays }}</div>
+<div style="font-size:10.5px;color:var(--color-neutral-700);margin-top:3px">school days</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:9px">Hours by subject</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ hourBars }}" as="h" hint-placeholder-count="5">
+<div>
+<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span>{{ h.name }}</span><span style="color:var(--color-neutral-700)">{{ h.hours }}</span></div>
+<div style="height:9px;border-radius:999px;background:var(--color-neutral-200);overflow:hidden"><div style="{{ h.fill }}"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Successes</div>
+<textarea class="input" placeholder="What went well this month…" value="{{ rSuccesses }}" onChange="{{ setSuccesses }}" style="border-radius:var(--radius-lg);min-height:80px;padding:13px 15px;font-size:13.5px;line-height:1.5"></textarea>
+</div>
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Difficulties</div>
+<textarea class="input" placeholder="What was hard, and what we tried…" value="{{ rDifficulties }}" onChange="{{ setDifficulties }}" style="border-radius:var(--radius-lg);min-height:80px;padding:13px 15px;font-size:13.5px;line-height:1.5"></textarea>
+</div>
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:15px;margin-bottom:8px">{{ rNotesTitle }}</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ rAnswers }}" as="a" hint-placeholder-count="2">
+<div>
+<div style="font-size:11.5px;color:var(--color-neutral-700)">{{ a.q }}</div>
+<div style="font-size:13.5px;line-height:1.45;margin-top:2px">{{ a.a }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ rNoAnswers }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12.5px;color:var(--color-neutral-700)">Not done yet this month.</div>
+</sc-if>
+</div>
+<button onClick="{{ goCheckin }}" class="btn btn-secondary" style="border-radius:999px;margin-top:12px;font-size:13px">{{ checkinCta }}</button>
+</div>
+
+<div style="display:flex;gap:8px">
+<button onClick="{{ copyReport }}" class="btn btn-primary" style="flex:1;border-radius:999px;padding:13px">{{ copyLabel }}</button>
+<button onClick="{{ printReport }}" class="btn btn-secondary" style="flex:1;border-radius:999px;padding:13px">Print / PDF</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCheckin }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-2-900)">{{ checkinTitle }}</div>
+<div style="font-size:12.5px;color:var(--color-accent-2-900);margin-top:3px">Five questions, once a month. His answers land in the report.</div>
+</div>
+<div style="display:flex;align-items:center;gap:9px">
+<div style="flex:1;height:6px;border-radius:999px;background:var(--color-neutral-200);overflow:hidden"><div style="{{ checkFill }}"></div></div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);flex:none">{{ checkProgress }}</div>
+</div>
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:18px">
+<div style="font-family:var(--font-heading);font-size:20px;line-height:1.2">{{ question }}</div>
+<textarea class="input" placeholder="In his own words…" value="{{ answer }}" onChange="{{ setAnswer }}" style="border-radius:var(--radius-lg);min-height:110px;margin-top:14px;padding:13px 15px;font-size:14px;line-height:1.5;background:var(--color-bg)"></textarea>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button onClick="{{ prevQ }}" class="btn btn-secondary" style="border-radius:999px;padding:11px 18px">Back</button>
+<button onClick="{{ nextQ }}" class="btn btn-primary" style="flex:1;border-radius:999px;padding:11px">{{ nextLabel }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAlbum }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:4px;background:var(--color-surface);border-radius:999px;padding:4px">
+<sc-for list="{{ albumTabs }}" as="t" hint-placeholder-count="2">
+<button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+</sc-for>
+</div>
+<label style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1.5px dashed var(--color-neutral-400);border-radius:var(--radius-lg);padding:14px;font-family:var(--font-heading);font-size:14px;color:var(--color-neutral-800)" style-hover="background:var(--color-neutral-200)">
+{{ addPhotoLabel }}
+<input type="file" accept="image/*" onChange="{{ addPhoto }}" style="display:none">
+</label>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+<sc-for list="{{ photos }}" as="p" hint-placeholder-count="0">
+<div style="position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:1;background:var(--color-surface)">
+<div role="img" aria-label="{{ p.caption }}" style="{{ p.tile }}"></div>
+<button onClick="{{ p.remove }}" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border:none;border-radius:999px;background:rgba(32,30,29,.55);color:#fff;cursor:pointer;font-size:12px;line-height:1">×</button>
+<button onClick="{{ p.flip }}" style="position:absolute;bottom:5px;left:5px;border:none;border-radius:999px;background:rgba(32,30,29,.55);color:#fff;cursor:pointer;font-size:9px;padding:3px 7px">{{ p.flipLabel }}</button>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ noPhotos }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.5">{{ emptyAlbumLine }}</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Student</div>
+<div style="display:flex;gap:7px">
+<input class="input" value="{{ studentName }}" onChange="{{ setStudentName }}" style="border-radius:999px;flex:1">
+<input class="input" value="{{ studentGrade }}" onChange="{{ setStudentGrade }}" style="border-radius:999px;flex:1">
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Subjects</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ subjectRows }}" as="s" hint-placeholder-count="5">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 14px">
+<div style="display:flex;align-items:center;gap:11px">
+<span style="{{ s.dot }}"></span>
+<span style="flex:1;min-width:0;font-size:14.5px">{{ s.name }}</span>
+<button onClick="{{ s.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:12px">remove</button>
+<button onClick="{{ s.toggle }}" style="{{ s.sw }}"><span style="{{ s.knob }}"></span></button>
+</div>
+<div style="display:flex;gap:4px;margin-top:10px">
+<sc-for list="{{ s.days }}" as="d" hint-placeholder-count="7">
+<button onClick="{{ d.toggle }}" style="{{ d.style }}">{{ d.label }}</button>
+</sc-for>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:8px">{{ s.meta }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:7px;margin-top:9px">
+<input class="input" placeholder="New subject — e.g. Science" value="{{ subjDraft }}" onChange="{{ setSubjDraft }}" style="border-radius:999px;flex:1">
+<button onClick="{{ addSubject }}" class="btn btn-primary" style="border-radius:999px">Add</button>
+</div>
+</div>
+
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Load a curriculum</div>
+<div style="font-size:12.5px;color:var(--color-accent-900);margin:4px 0 11px;line-height:1.5">Paste the table of contents — one lesson per line. They queue up in order and land on the calendar automatically.</div>
+<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px">
+<sc-for list="{{ curSubjects }}" as="c" hint-placeholder-count="5">
+<button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}</button>
+</sc-for>
+</div>
+<input class="input" placeholder="Curriculum name" value="{{ curName }}" onChange="{{ setCurName }}" style="border-radius:999px;margin-bottom:7px">
+<textarea class="input" placeholder="Lesson 1 — Counting to 10&#10;Lesson 2 — Number bonds&#10;Lesson 3 — …" value="{{ curPaste }}" onChange="{{ setCurPaste }}" style="border-radius:var(--radius-lg);min-height:110px;padding:12px 14px;font-size:13px;line-height:1.5"></textarea>
+<div style="display:flex;gap:7px;margin-top:9px;align-items:center">
+<button onClick="{{ importCur }}" class="btn btn-primary" style="border-radius:999px">Load into {{ curSubjectName }}</button>
+<span style="font-size:11.5px;color:var(--color-accent-900)">{{ curStatus }}</span>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">This device</div>
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
+{{ storageNote }}
+<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+<button onClick="{{ exportData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Export backup</button>
+<button onClick="{{ resetData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">{{ resetLabel }}</button>
+</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">More</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ moreItems }}" as="m" hint-placeholder-count="3">
+<button onClick="{{ m.go }}" style="width:100%;border:none;cursor:pointer;background:var(--color-surface);border-radius:var(--radius-lg);padding:14px 16px;display:flex;align-items:center;gap:12px;text-align:left" style-hover="background:var(--color-neutral-300)">
+<span style="{{ m.dot }}"></span>
+<span style="flex:1">
+<span style="display:block;font-size:14.5px;color:var(--color-text)">{{ m.name }}</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:1px">{{ m.sub }}</span>
+</span>
+<span style="font-size:18px;color:var(--color-neutral-600)">›</span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<div style="flex:none;display:flex;padding:7px 8px calc(env(safe-area-inset-bottom) + 10px);background:var(--color-surface);border-top:1px solid var(--color-divider)">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+<button onClick="{{ t.pick }}" style="{{ t.style }}">
+<span style="{{ t.mark }}"></span>
+<span style="font-size:10px">{{ t.label }}</span>
+</button>
+</sc-for>
+</div>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:900}}">
+const KEY = 'rootrise.data.v1';
+const PKEY = 'rootrise.photos.v1';
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const QS = [
+  'What was the best thing we learned this month?',
+  'Was anything too hard, or too boring?',
+  'What do you want to keep doing next month?',
+  'Is there something new you want to try?',
+  'What could I do differently in our lessons?',
+];
+const LEVELS = ['Pre-reader', 'GR A', 'GR B', 'GR C', 'GR D', 'GR E', 'GR F', 'GR G', 'GR H', 'GR I', 'GR J'];
+const TAGS = ['clicked', 'needs review', 'struggled', 'loved it'];
+const uid = () => Math.random().toString(36).slice(2, 9);
+const key = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const parse = (k) => { const p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
+const addDays = (d, n) => { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; };
+const monKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+
+function seed() {
+  const S = [
+    ['bible', 'Bible Study', '#3d472b', 15, [1, 2, 3, 4, 5], 'Genesis — creation to Joseph', 'Lesson ', 12, 60],
+    ['math', 'Math', '#c67139', 20, [1, 2, 3, 4, 5], 'Math-U-See Primer', 'Lesson ', 24, 120],
+    ['reading', 'Reading', '#7a8a5e', 20, [1, 2, 3, 4, 5], 'Bob Books, Sets 2–3', 'Book ', 5, 30],
+    ['writing', 'Writing', '#8c491a', 15, [1, 2, 4, 5], 'Handwriting practice', 'Week ', 6, 30],
+    ['french', 'French', '#645c50', 10, [2, 4], 'French for little ones', 'Leçon ', 9, 40],
+  ];
+  const subjects = [], cur = {};
+  S.forEach(([id, name, color, mins, days, cname, prefix, from, count]) => {
+    subjects.push({ id, name, color, mins, days, active: true });
+    cur[id] = { name: cname, pos: 0, items: Array.from({ length: count }, (_, i) => prefix + (from + i)) };
+  });
+  return { v: 1, student: { name: 'Liam', grade: 'Kindergarten', level: 2 }, subjects, cur, log: {}, acts: [], mats: [], books: [
+    { id: uid(), title: 'Sam and the Bag', author: 'Bob Books, Set 2', level: 'GR B', state: 'now' },
+    { id: uid(), title: 'Frog and Toad Are Friends', author: 'Arnold Lobel', level: 'AR 2.9', state: 'now' },
+  ], months: {}, installed: false };
+}
+
+class Component extends DCLogic {
+  state = {
+    d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
+    secs: 0, running: false, weekStart: null, selDate: null, month: null, q: 0,
+    bookTab: 'now', albumTab: 'photos', curPick: null, drafts: {}, copied: false, resetArmed: false,
+  };
+
+  componentDidMount() {
+    let d;
+    try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
+    if (!d || !d.subjects) d = seed();
+    let photos = [];
+    try { photos = JSON.parse(localStorage.getItem(PKEY)) || []; } catch (e) { photos = []; }
+    const today = new Date();
+    const ws = addDays(today, -((today.getDay() + 6) % 7));
+    this.setState({ d, photos, weekStart: key(ws), selDate: key(today), month: monKey(today) }, () => this.ensure(key(today)));
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  }
+
+  componentWillUnmount() { clearInterval(this._t); }
+
+  save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+  mutate(fn, cb) {
+    const d = JSON.parse(JSON.stringify(this.state.d));
+    fn(d);
+    this.setState({ d }, cb);
+    this.save(d);
+  }
+  savePhotos(photos) {
+    this.setState({ photos });
+    try { localStorage.setItem(PKEY, JSON.stringify(photos)); } catch (e) {}
+  }
+
+  scheduled(d, dateKey) {
+    const dow = parse(dateKey).getDay();
+    return d.subjects.filter(s => s.active && s.days.includes(dow));
+  }
+  // how many scheduled sittings of `sid` fall in [from, to)
+  offset(d, sid, fromKey, toKey) {
+    let n = 0, cur = parse(fromKey), end = parse(toKey);
+    const s = d.subjects.find(x => x.id === sid);
+    if (!s) return 0;
+    while (cur < end && n < 400) { if (s.active && s.days.includes(cur.getDay())) n++; cur = addDays(cur, 1); }
+    return n;
+  }
+  refFor(d, sid, dateKey) {
+    const c = d.cur[sid];
+    if (!c || !c.items.length) return 'No lessons loaded';
+    const todayKey = key(new Date());
+    const off = dateKey > todayKey ? this.offset(d, sid, todayKey, dateKey) : 0;
+    return c.items[c.pos + off] || 'Curriculum finished';
+  }
+  ensure(dateKey) {
+    const d = this.state.d;
+    if (!d || d.log[dateKey]) return;
+    const subs = this.scheduled(d, dateKey);
+    if (!subs.length) return;
+    this.mutate(dd => {
+      dd.log[dateKey] = subs.map(s => ({
+        sid: s.id, ref: this.refFor(dd, s.id, dateKey), status: 'todo', secs: 0, before: '', after: '', tags: [],
+      }));
+    });
+  }
+
+  entriesFor(dateKey) {
+    const d = this.state.d;
+    if (d.log[dateKey]) return d.log[dateKey];
+    return this.scheduled(d, dateKey).map(s => ({ sid: s.id, ref: this.refFor(d, s.id, dateKey), status: 'todo', secs: 0, virtual: true }));
+  }
+
+  openLesson(dateKey, i) {
+    this.flushTime();
+    this.ensure(dateKey);
+    this.setState(s => ({ screen: 'lesson', lessonDate: dateKey, lessonIdx: i, secs: 0, running: false, stack: s.stack.concat([s.screen]) }));
+  }
+  patchEntry(fn) {
+    const { lessonDate, lessonIdx } = this.state;
+    this.mutate(d => { const e = d.log[lessonDate] && d.log[lessonDate][lessonIdx]; if (e) fn(e, d); });
+  }
+  // Commit any running seconds into the entry. Called before every exit path
+  // so time is never silently lost.
+  flushTime() {
+    const add = this.state.secs;
+    clearInterval(this._t);
+    if (add || this.state.running) this.setState({ secs: 0, running: false });
+    if (add && this.state.lessonDate) this.patchEntry(e => { e.secs = (e.secs || 0) + add; });
+  }
+  tick = () => {
+    if (!this.state.running) {
+      clearInterval(this._t);
+      this._t = setInterval(() => this.setState(s => ({ secs: s.secs + 1 })), 1000);
+      this.setState({ running: true });
+    } else {
+      this.flushTime();
+    }
+  };
+
+  monthStats(mk) {
+    const d = this.state.d, per = {}, out = { secs: 0, lessons: 0, days: 0, per };
+    Object.keys(d.log).forEach(k => {
+      if (monKey(parse(k)) !== mk) return;
+      let any = false;
+      d.log[k].forEach(e => {
+        if (e.secs) { per[e.sid] = (per[e.sid] || 0) + e.secs; out.secs += e.secs; }
+        if (e.status === 'done' || e.status === 'partial') { out.lessons++; any = true; }
+      });
+      if (any) out.days++;
+    });
+    return out;
+  }
+
+  addPhoto = (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    const kind = this.state.albumTab;
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 720, sc = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const url = c.toDataURL('image/jpeg', 0.62);
+        this.savePhotos([{ id: uid(), url, kind, date: key(new Date()), caption: f.name.replace(/\.[^.]+$/, '') }].concat(this.state.photos));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(f);
+    ev.target.value = '';
+  };
+
+  reportText(mk) {
+    const d = this.state.d, st = this.monthStats(mk), m = d.months[mk] || {};
+    const dt = parse(mk + '-01');
+    const lines = [
+      d.student.name + ' — ' + MON[dt.getMonth()] + ' ' + dt.getFullYear() + ' (' + d.student.grade + ')',
+      '',
+      'Hours: ' + (st.secs / 3600).toFixed(1) + '   Lessons: ' + st.lessons + '   School days: ' + st.days,
+      '',
+      'Hours by subject:',
+    ];
+    d.subjects.forEach(s => { if (st.per[s.id]) lines.push('  ' + s.name + ': ' + (st.per[s.id] / 3600).toFixed(1) + ' h'); });
+    lines.push('', 'Successes: ' + (m.successes || '—'), '', 'Difficulties: ' + (m.difficulties || '—'), '', "Student check-in:");
+    QS.forEach((q, i) => { const a = m.answers && m.answers[i]; if (a) lines.push('  Q: ' + q, '  A: ' + a); });
+    return lines.join('\n');
+  }
+
+  renderVals() {
+    const st = this.state;
+    if (!st.d) return { title: 'Root & Rise', subtitle: 'loading…', initial: 'R', isToday: true, todayLessons: [], todayActs: [], noActs: true, tabs: [],
+      weekHours: '—', monthLessons: '—', booksDone: '—', todayProgress: '', aheadLabel: '', aheadSummary: '', todayEmpty: false, todayEmptyLine: '', showInstall: false, showBack: false };
+    const d = st.d, S = d.subjects;
+    const sub = (id) => S.find(s => s.id === id) || { name: '—', color: 'var(--color-neutral-500)', mins: 0 };
+    const dot = (c, sz) => ({ width: sz || 10, height: sz || 10, borderRadius: 999, background: c, flex: 'none', display: 'inline-block' });
+    const chip = (bg, fg, bd) => ({ fontSize: 10.5, padding: '4px 9px', borderRadius: 999, flex: 'none', whiteSpace: 'nowrap', background: bg, color: fg, border: bd || 'none' });
+    const seg = (on) => ({ flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '9px 4px', fontFamily: 'var(--font-heading)', fontSize: 12.5, background: on ? 'var(--color-bg)' : 'transparent', color: on ? 'var(--color-text)' : 'var(--color-neutral-700)', boxShadow: on ? 'var(--shadow-sm)' : 'none' });
+    const box = (on) => ({ width: 20, height: 20, flex: 'none', borderRadius: 7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', background: on ? 'var(--color-accent-2)' : 'transparent', border: '1.5px solid ' + (on ? 'var(--color-accent-2)' : 'var(--color-neutral-400)') });
+    const draft = (k) => st.drafts[k] || '';
+    const setDraft = (k) => (ev) => { const v = ev.target.value; this.setState(s => ({ drafts: Object.assign({}, s.drafts, { [k]: v }) })); };
+    const clearDraft = (k) => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { [k]: '' }) }));
+
+    const today = new Date(), tKey = key(today);
+    const tabRoots = ['today', 'week', 'books', 'report', 'setup'];
+    const titles = {
+      today: [DOW[today.getDay()] + ', ' + MON[today.getMonth()].slice(0, 3) + ' ' + today.getDate(), d.student.name + ' · ' + d.student.grade],
+      week: ['This week', 'lessons run in order, no clock times'],
+      lesson: ['Lesson', st.lessonDate === tKey ? 'today' : (st.lessonDate || '')],
+      ahead: ['Look ahead', 'materials for next week'],
+      books: ['Books', d.student.name + "'s reading"],
+      report: ['Monthly report', 'for our own records'],
+      checkin: ['Check-in', 'once a month'],
+      album: ['Album & portfolio', st.photos.length + ' items'],
+      setup: ['Setup', 'subjects, curriculum, backup'],
+    };
+    const t = titles[st.screen] || titles.today;
+
+    // ── today
+    const tEntries = d.log[tKey] || [];
+    const doneCount = tEntries.filter(e => e.status === 'done').length;
+    const wkStartToday = addDays(today, -((today.getDay() + 6) % 7));
+    let weekSecs = 0;
+    for (let i = 0; i < 7; i++) { const k = key(addDays(wkStartToday, i)); (d.log[k] || []).forEach(e => { weekSecs += e.secs || 0; }); }
+    const mstats = this.monthStats(monKey(today));
+
+    // ── week strip
+    const ws = st.weekStart ? parse(st.weekStart) : wkStartToday;
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const dt = addDays(ws, i), k = key(dt);
+      const ents = this.entriesFor(k);
+      const acts = d.acts.filter(a => a.date === k);
+      return {
+        dow: DOW[dt.getDay()], date: dt.getDate(), pick: () => this.setState({ selDate: k }),
+        col: { cursor: 'pointer', border: 'none', textAlign: 'center', padding: '7px 3px 7px', borderRadius: 16, background: ents.length ? 'var(--color-surface)' : 'var(--color-neutral-200)', outline: k === st.selDate ? '2px solid var(--color-accent)' : 'none' },
+        num: { display: 'block', fontFamily: 'var(--font-heading)', fontSize: 14, color: k === tKey ? 'var(--color-accent-700)' : 'var(--color-text)' },
+        chips: ents.map(e => ({ label: sub(e.sid).name.slice(0, 4), style: { fontSize: 8.5, padding: '5px 1px', borderRadius: 8, background: sub(e.sid).color, color: '#fff', overflow: 'hidden', opacity: e.status === 'done' ? 0.55 : 1 } }))
+          .concat(acts.map(a => ({ label: a.name.slice(0, 4), style: { fontSize: 8.5, padding: '4px 1px', borderRadius: 8, border: '1.5px dashed var(--color-accent-2)', color: 'var(--color-accent-2-800)', overflow: 'hidden' } }))),
+      };
+    });
+    const selK = st.selDate || tKey, selDt = parse(selK);
+    const selItems = this.entriesFor(selK).map((e, i) => ({
+      dot: dot(sub(e.sid).color), label: sub(e.sid).name + ' · ' + e.ref,
+      right: e.secs ? Math.round(e.secs / 60) + ' min' : (e.status === 'done' ? 'done' : sub(e.sid).mins + ' min'),
+      removable: false, remove: () => {},
+    })).concat(d.acts.filter(a => a.date === selK).map(a => ({
+      dot: { width: 10, height: 10, borderRadius: 999, flex: 'none', display: 'inline-block', border: '1.5px dashed var(--color-accent-2)' },
+      label: a.name, right: 'activity', removable: true,
+      remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }),
+    })));
+
+    // ── lesson
+    const lEnts = (st.lessonDate && d.log[st.lessonDate]) || [];
+    const le = lEnts[st.lessonIdx] || { sid: S[0] && S[0].id, ref: '—', status: 'todo', secs: 0, before: '', after: '', tags: [] };
+    const lsub = sub(le.sid);
+    const totalSecs = (le.secs || 0) + st.secs;
+    const stLabels = { done: 'Done', partial: 'Partial', skipped: 'Skipped' };
+    const stColors = { done: ['var(--color-accent-2-300)', 'var(--color-accent-2-900)'], partial: ['var(--color-accent-200)', 'var(--color-accent-900)'], skipped: ['var(--color-neutral-300)', 'var(--color-neutral-800)'] };
+
+    // ── look ahead (next week)
+    const aheadStart = addDays(wkStartToday, 7);
+    const aheadDays = Array.from({ length: 7 }, (_, i) => addDays(aheadStart, i)).filter(dt => this.scheduled(d, key(dt)).length || d.acts.some(a => a.date === key(dt)));
+    const aheadMats = d.mats.filter(m => m.date >= key(aheadStart) && m.date <= key(addDays(aheadStart, 6)));
+    const aheadTodo = aheadMats.filter(m => !m.have).length;
+
+    // ── books
+    const bookList = d.books.filter(b => b.state === st.bookTab);
+    const nextState = { list: 'now', now: 'done', done: 'list' };
+    const actionLabel = { list: 'Start', now: 'Finished', done: 'To list' };
+    const lvl = LEVELS[d.student.level] || 'GR B';
+
+    // ── report
+    const mk = st.month || monKey(today), mdt = parse(mk + '-01');
+    const rst = this.monthStats(mk), mrec = d.months[mk] || {};
+    const maxSecs = Math.max.apply(null, [1].concat(S.map(s => rst.per[s.id] || 0)));
+    const answers = mrec.answers || {};
+
+    return {
+      title: t[0], subtitle: t[1], initial: (d.student.name || 'R').trim().charAt(0).toUpperCase(),
+      showBack: st.stack.length > 0,
+      back: () => { this.flushTime(); this.setState(s => ({ screen: s.stack[s.stack.length - 1] || 'today', stack: s.stack.slice(0, -1) })); },
+      goSetup: () => { this.flushTime(); this.setState({ screen: 'setup', stack: [] }); },
+      showInstall: !d.installed && st.screen === 'today',
+      dismissInstall: () => this.mutate(dd => { dd.installed = true; }),
+
+      isToday: st.screen === 'today', isWeek: st.screen === 'week', isLesson: st.screen === 'lesson',
+      isAhead: st.screen === 'ahead', isBooks: st.screen === 'books', isReport: st.screen === 'report',
+      isCheckin: st.screen === 'checkin', isAlbum: st.screen === 'album', isSetup: st.screen === 'setup',
+
+      weekHours: (weekSecs / 3600).toFixed(1), monthLessons: mstats.lessons, booksDone: d.books.filter(b => b.state === 'done').length,
+      todayProgress: tEntries.length ? doneCount + ' of ' + tEntries.length + ' done' : '',
+      todayEmpty: !tEntries.length,
+      todayEmptyLine: this.scheduled(d, tKey).length ? 'Tap Today again to lay out the day.' : 'No school scheduled today. Enjoy it.',
+      todayLessons: tEntries.map((e, i) => ({
+        subject: sub(e.sid).name, ref: e.ref, line: e.after ? e.after.slice(0, 60) : (e.before ? e.before.slice(0, 60) : 'No notes yet'),
+        dot: dot(sub(e.sid).color),
+        chipLabel: e.status === 'todo' ? (e.secs ? Math.round(e.secs / 60) + ' min' : sub(e.sid).mins + ' min') : stLabels[e.status],
+        chip: e.status === 'todo' ? chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)') : chip(stColors[e.status][0], stColors[e.status][1]),
+        open: () => this.openLesson(tKey, i),
+      })),
+      todayActs: d.acts.filter(a => a.date === tKey).map(a => ({ name: a.name, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })),
+      noActs: !d.acts.some(a => a.date === tKey),
+      goAhead: () => this.setState(s => ({ screen: 'ahead', stack: s.stack.concat([s.screen]) })),
+      aheadLabel: 'week of ' + MON[aheadStart.getMonth()].slice(0, 3) + ' ' + aheadStart.getDate(),
+      aheadSummary: aheadMats.length ? aheadTodo + ' of ' + aheadMats.length + ' materials still to gather' : 'add what you need to gather',
+      aheadHeadline: aheadTodo ? aheadTodo + ' things to get before Monday' : 'Nothing left to gather',
+      aheadDays: aheadDays.map(dt => {
+        const k = key(dt), dk = 'mat-' + k;
+        const mats = d.mats.filter(m => m.date === k);
+        return {
+          day: DOW[dt.getDay()] + ', ' + MON[dt.getMonth()].slice(0, 3) + ' ' + dt.getDate(),
+          plan: this.scheduled(d, k).map(s => s.name).join(' · ') || 'activities only',
+          mats: mats.map(m => ({
+            name: m.name, box: box(m.have), mark: m.have ? '✓' : '',
+            chip: chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)'),
+            src: m.src === 'auto' ? 'curriculum' : 'added by you',
+            toggle: () => this.mutate(dd => { const x = dd.mats.find(y => y.id === m.id); if (x) x.have = !x.have; }),
+          })),
+          noMats: !mats.length,
+          draft: draft(dk), setDraft: setDraft(dk),
+          add: () => { const v = draft(dk).trim(); if (!v) return; this.mutate(dd => { dd.mats.push({ id: uid(), date: k, name: v, have: false, src: 'you' }); }, () => clearDraft(dk)); },
+        };
+      }),
+
+      weekLabel: MON[ws.getMonth()].slice(0, 3) + ' ' + ws.getDate() + ' – ' + addDays(ws, 6).getDate(),
+      prevWeek: () => this.setState({ weekStart: key(addDays(ws, -7)) }),
+      nextWeek: () => this.setState({ weekStart: key(addDays(ws, 7)) }),
+      thisWeek: () => this.setState({ weekStart: key(wkStartToday), selDate: tKey }),
+      weekDays,
+      selDayLabel: DOW[selDt.getDay()] + ', ' + MON[selDt.getMonth()].slice(0, 3) + ' ' + selDt.getDate(),
+      selDayItems: selItems,
+      actDraft: draft('act'), setActDraft: setDraft('act'),
+      addAct: () => { const v = draft('act').trim(); if (!v) return; this.mutate(dd => { dd.acts.push({ id: uid(), date: selK, name: v }); }, () => clearDraft('act')); },
+
+      lesson: { subject: lsub.name, ref: le.ref, before: le.before || '', after: le.after || '', dot: dot(lsub.color, 11) },
+      clock: String(Math.floor(totalSecs / 60)).padStart(2, '0') + ':' + String(totalSecs % 60).padStart(2, '0'),
+      timerNote: le.secs ? Math.round(le.secs / 60) + ' min already logged · planned ' + lsub.mins : 'planned ' + lsub.mins + ' min',
+      timerLabel: st.running ? 'Pause & log' : (le.secs ? 'Keep going' : 'Start lesson'),
+      timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: st.running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: st.running ? '#fff' : 'var(--color-bg)' },
+      toggleTimer: this.tick,
+      resetTimer: () => { clearInterval(this._t); this.setState({ secs: 0, running: false }); this.patchEntry(e => { e.secs = 0; }); },
+      setBefore: (ev) => { const v = ev.target.value; this.patchEntry(e => { e.before = v; }); },
+      setAfter: (ev) => { const v = ev.target.value; this.patchEntry(e => { e.after = v; }); },
+      tags: TAGS.map(label => {
+        const on = (le.tags || []).includes(label);
+        return { label, toggle: () => this.patchEntry(e => { e.tags = on ? e.tags.filter(x => x !== label) : (e.tags || []).concat([label]); }),
+          style: { cursor: 'pointer', borderRadius: 999, padding: '7px 13px', fontSize: 12, border: '1.5px solid ' + (on ? 'var(--color-accent-2-600)' : 'var(--color-neutral-400)'), background: on ? 'var(--color-accent-2-300)' : 'transparent', color: on ? 'var(--color-accent-2-900)' : 'var(--color-neutral-800)' } };
+      }),
+      statusBtns: ['done', 'partial', 'skipped'].map(k => ({
+        label: stLabels[k],
+        pick: () => { const add = st.secs; clearInterval(this._t); if (add || st.running) this.setState({ secs: 0, running: false }); this.patchEntry((e, dd) => {
+          if (add) e.secs = (e.secs || 0) + add;
+          const was = e.status; e.status = k;
+          const c = dd.cur[e.sid];
+          if (c && k === 'done' && was !== 'done' && c.items[c.pos] === e.ref) c.pos = Math.min(c.pos + 1, c.items.length);
+          if (c && was === 'done' && k !== 'done' && c.pos > 0 && c.items[c.pos - 1] === e.ref) c.pos -= 1;
+        }); },
+        style: { flex: 1, cursor: 'pointer', borderRadius: 999, padding: '11px 4px', fontFamily: 'var(--font-heading)', fontSize: 13, border: '1.5px solid ' + (le.status === k ? 'transparent' : 'var(--color-neutral-400)'), background: le.status === k ? stColors[k][0] : 'transparent', color: le.status === k ? stColors[k][1] : 'var(--color-neutral-800)' },
+      })),
+      advanceNote: 'Marking done moves ' + lsub.name + ' to the next lesson in the curriculum.',
+
+      levelShort: lvl.replace('GR ', '') || '·', levelName: lvl === 'Pre-reader' ? 'Pre-reader' : 'Guided Reading ' + lvl.replace('GR ', ''),
+      levelNote: 'tap + when he moves up · used to flag stretch books',
+      levelUp: () => this.mutate(dd => { dd.student.level = Math.min(LEVELS.length - 1, dd.student.level + 1); }),
+      levelDown: () => this.mutate(dd => { dd.student.level = Math.max(0, dd.student.level - 1); }),
+      bookTabs: [['now', 'Reading now'], ['done', 'Finished'], ['list', 'Reading list']].map(([k, label]) => ({ label, pick: () => this.setState({ bookTab: k }), style: seg(st.bookTab === k) })),
+      noBooks: !bookList.length,
+      books: bookList.map((b, i) => {
+        const li = LEVELS.indexOf(b.level);
+        const fit = li < 0 ? 'read-aloud' : (li < d.student.level ? 'easy' : li === d.student.level ? 'just right' : 'stretch');
+        return { title: b.title, author: b.author || '—', level: b.level || 'no level', fit,
+          cover: { width: 40, height: 54, flex: 'none', borderRadius: 8, background: 'repeating-linear-gradient(-45deg, var(--color-neutral-200) 0 6px, var(--color-neutral-300) 6px 12px)' },
+          levelChip: chip('var(--color-accent-2-200)', 'var(--color-accent-2-900)'),
+          fitChip: chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)'),
+          action: actionLabel[b.state],
+          advance: () => this.mutate(dd => { const x = dd.books.find(y => y.id === b.id); if (x) x.state = nextState[x.state]; }),
+          remove: () => this.mutate(dd => { dd.books = dd.books.filter(y => y.id !== b.id); }) };
+      }),
+      bookTitle: draft('bt'), setBookTitle: setDraft('bt'),
+      bookAuthor: draft('ba'), setBookAuthor: setDraft('ba'),
+      bookLevel: draft('bl'), setBookLevel: setDraft('bl'),
+      addBook: () => { const ti = draft('bt').trim(); if (!ti) return; this.mutate(dd => { dd.books.unshift({ id: uid(), title: ti, author: draft('ba').trim(), level: draft('bl').trim(), state: st.bookTab }); }, () => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { bt: '', ba: '', bl: '' }) }))); },
+      levelHint: 'Levels are yours to type — Guided Reading A–J, or an AR number. Anything at ' + lvl + ' reads as “just right”, above it as “stretch”.',
+
+      monthLabel: MON[mdt.getMonth()] + ' ' + mdt.getFullYear(),
+      prevMonth: () => this.setState({ month: monKey(new Date(mdt.getFullYear(), mdt.getMonth() - 1, 1)) }),
+      nextMonth: () => this.setState({ month: monKey(new Date(mdt.getFullYear(), mdt.getMonth() + 1, 1)) }),
+      rHours: (rst.secs / 3600).toFixed(1), rLessons: rst.lessons, rDays: rst.days,
+      hourBars: S.map((s, i) => ({ name: s.name, hours: ((rst.per[s.id] || 0) / 3600).toFixed(1) + ' h',
+        fill: { width: Math.round((rst.per[s.id] || 0) / maxSecs * 100) + '%', height: '100%', borderRadius: 999, background: i % 2 ? 'var(--color-accent-2)' : 'var(--color-accent)' } })),
+      rSuccesses: mrec.successes || '', setSuccesses: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.months[mk] = Object.assign({}, dd.months[mk], { successes: v }); }); },
+      rDifficulties: mrec.difficulties || '', setDifficulties: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.months[mk] = Object.assign({}, dd.months[mk], { difficulties: v }); }); },
+      rNotesTitle: d.student.name + "'s check-in",
+      rAnswers: QS.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a),
+      rNoAnswers: !QS.some((q, i) => answers[i]),
+      checkinCta: QS.some((q, i) => answers[i]) ? 'Edit the check-in' : 'Do the check-in',
+      goCheckin: () => this.setState(s => ({ screen: 'checkin', q: 0, stack: s.stack.concat([s.screen]) })),
+      copyLabel: st.copied ? 'Copied ✓' : 'Copy summary',
+      copyReport: () => { const txt = this.reportText(mk);
+        if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
+        this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1800); },
+      printReport: () => window.print(),
+
+      checkinTitle: 'Ask ' + d.student.name + ', type what he says',
+      question: QS[st.q], answer: answers[st.q] || '',
+      setAnswer: (ev) => { const v = ev.target.value; this.mutate(dd => { const m = dd.months[mk] || {}; m.answers = Object.assign({}, m.answers, { [st.q]: v }); dd.months[mk] = m; }); },
+      checkProgress: (st.q + 1) + ' of ' + QS.length,
+      checkFill: { width: ((st.q + 1) / QS.length * 100) + '%', height: '100%', borderRadius: 999, background: 'var(--color-accent-2)' },
+      nextLabel: st.q === QS.length - 1 ? 'Save to the report' : 'Next question',
+      nextQ: () => this.setState(s => (s.q === QS.length - 1 ? { screen: 'report', q: 0, stack: [] } : { q: s.q + 1 })),
+      prevQ: () => this.setState(s => ({ q: Math.max(0, s.q - 1) })),
+
+      albumTabs: [['photos', 'Photos'], ['work', 'Portfolio']].map(([k, label]) => ({ label, pick: () => this.setState({ albumTab: k }), style: seg(st.albumTab === k) })),
+      addPhotoLabel: st.albumTab === 'photos' ? '+ Add a photo' : '+ Add a work sample',
+      addPhoto: this.addPhoto,
+      photos: st.photos.filter(p => p.kind === st.albumTab).map(p => ({
+        caption: p.caption,
+        tile: { width: '100%', height: '100%', backgroundImage: 'url(' + p.url + ')', backgroundSize: 'cover', backgroundPosition: 'center' },
+        remove: () => this.savePhotos(st.photos.filter(x => x.id !== p.id)),
+        flipLabel: p.kind === 'photos' ? '→ portfolio' : '→ photos',
+        flip: () => this.savePhotos(st.photos.map(x => x.id === p.id ? Object.assign({}, x, { kind: x.kind === 'photos' ? 'work' : 'photos' }) : x)),
+      })),
+      noPhotos: !st.photos.some(p => p.kind === st.albumTab),
+      emptyAlbumLine: st.albumTab === 'photos' ? 'Photos live on this device only — snap the nature walk, the volcano, the finished page.' : 'Work samples: handwriting pages, drawings, a photo of a finished worksheet.',
+
+      studentName: d.student.name, setStudentName: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.student.name = v; }); },
+      studentGrade: d.student.grade, setStudentGrade: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.student.grade = v; }); },
+      subjectRows: S.map(s => ({
+        name: s.name, dot: dot(s.color, 11),
+        meta: (d.cur[s.id] ? d.cur[s.id].name + ' · lesson ' + Math.min(d.cur[s.id].pos + 1, d.cur[s.id].items.length) + ' of ' + d.cur[s.id].items.length : 'no curriculum loaded') + ' · ' + s.mins + ' min',
+        toggle: () => this.mutate(dd => { const x = dd.subjects.find(y => y.id === s.id); if (x) x.active = !x.active; }),
+        remove: () => this.mutate(dd => { dd.subjects = dd.subjects.filter(y => y.id !== s.id); }),
+        sw: { width: 44, height: 26, flex: 'none', border: 'none', cursor: 'pointer', borderRadius: 999, padding: 3, display: 'flex', justifyContent: s.active ? 'flex-end' : 'flex-start', background: s.active ? 'var(--color-accent-2)' : 'var(--color-neutral-400)' },
+        knob: { width: 20, height: 20, borderRadius: 999, background: '#fff', display: 'block' },
+        days: [1, 2, 3, 4, 5, 6, 0].map(dw => {
+          const on = s.days.includes(dw);
+          return { label: DOW[dw].charAt(0), toggle: () => this.mutate(dd => { const x = dd.subjects.find(y => y.id === s.id); if (!x) return; x.days = on ? x.days.filter(z => z !== dw) : x.days.concat([dw]); }),
+            style: { flex: 1, cursor: 'pointer', border: '1.5px solid ' + (on ? 'transparent' : 'var(--color-neutral-400)'), background: on ? s.color : 'transparent', color: on ? '#fff' : 'var(--color-neutral-700)', borderRadius: 999, padding: '6px 0', fontSize: 11.5 } };
+        }),
+      })),
+      subjDraft: draft('sj'), setSubjDraft: setDraft('sj'),
+      addSubject: () => { const v = draft('sj').trim(); if (!v) return; const id = 's' + uid();
+        this.mutate(dd => { dd.subjects.push({ id, name: v, color: ['#c67139', '#7a8a5e', '#8c491a', '#3d472b', '#645c50'][dd.subjects.length % 5], mins: 15, days: [1, 2, 3, 4, 5], active: true }); dd.cur[id] = { name: 'Not loaded', pos: 0, items: [] }; }, () => clearDraft('sj')); },
+
+      curSubjects: S.map(s => ({ name: s.name, pick: () => this.setState({ curPick: s.id }),
+        style: { cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12, border: '1.5px solid ' + ((st.curPick || S[0].id) === s.id ? 'transparent' : 'var(--color-accent-600)'), background: (st.curPick || S[0].id) === s.id ? 'var(--color-accent)' : 'transparent', color: (st.curPick || S[0].id) === s.id ? 'var(--color-bg)' : 'var(--color-accent-800)' } })),
+      curSubjectName: sub(st.curPick || (S[0] && S[0].id)).name,
+      curName: draft('cn'), setCurName: setDraft('cn'),
+      curPaste: draft('cp'), setCurPaste: setDraft('cp'),
+      curStatus: st.drafts.curDone || '',
+      importCur: () => {
+        const sid = st.curPick || (S[0] && S[0].id);
+        const items = draft('cp').split('\n').map(x => x.trim()).filter(Boolean);
+        if (!items.length || !sid) return;
+        this.mutate(dd => { dd.cur[sid] = { name: draft('cn').trim() || 'Imported', pos: 0, items }; Object.keys(dd.log).forEach(k => { if (k >= tKey) delete dd.log[k]; }); },
+          () => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { cp: '', cn: '', curDone: items.length + ' lessons loaded' }) }), () => this.ensure(tKey)));
+      },
+      storageNote: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net.',
+      exportData: () => {
+        const blob = new Blob([JSON.stringify({ data: d, photos: st.photos }, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'root-and-rise-backup-' + tKey + '.json';
+        a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      },
+      resetLabel: st.resetArmed ? 'Tap again to erase everything' : 'Start fresh',
+      resetData: () => {
+        if (!st.resetArmed) { this.setState({ resetArmed: true }); setTimeout(() => this.setState({ resetArmed: false }), 4000); return; }
+        const fresh = seed(); this.save(fresh); this.savePhotos([]);
+        this.setState({ d: fresh, resetArmed: false, screen: 'today', stack: [] }, () => this.ensure(tKey));
+      },
+      moreItems: [
+        ['album', 'Album & portfolio', st.photos.length + ' photos and samples', '#c67139'],
+        ['ahead', 'Look ahead', 'materials for next week', '#7a8a5e'],
+        ['checkin', d.student.name + "'s check-in", QS.some((q, i) => answers[i]) ? 'done this month' : 'not done this month', '#8c491a'],
+      ].map(([s, n, sb, c]) => ({ name: n, sub: sb, dot: dot(c, 11), go: () => this.setState(x => ({ screen: s, stack: x.stack.concat([x.screen]) })) })),
+
+      tabs: [['today', 'Today'], ['week', 'Week'], ['books', 'Books'], ['report', 'Report'], ['setup', 'Setup']].map(([k, label]) => {
+        const on = st.screen === k || (k === 'setup' && !tabRoots.includes(st.screen));
+        return { label, pick: () => { this.flushTime(); if (k === 'today') this.ensure(tKey); this.setState({ screen: k, stack: [] }); },
+          style: { flex: 1, cursor: 'pointer', border: 'none', background: 'transparent', padding: '6px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, color: on ? 'var(--color-accent-700)' : 'var(--color-neutral-600)' },
+          mark: { width: on ? 22 : 9, height: 9, borderRadius: 999, background: on ? 'var(--color-accent)' : 'var(--color-neutral-500)', display: 'block' } };
+      }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
