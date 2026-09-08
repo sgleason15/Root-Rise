@@ -53,6 +53,17 @@ a:hover{color:var(--color-accent-600)}
 
 <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
 <div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{ showNudge }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-2-900)">{{ nudgeTitle }}</div>
+<div style="font-size:12.5px;line-height:1.5;color:var(--color-accent-2-900);margin:4px 0 11px">{{ nudgeLine }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px">
+<button onClick="{{ nudgeReport }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px">Open the report</button>
+<button onClick="{{ nudgeCheckin }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Check-in</button>
+<button onClick="{{ exportData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Export backup</button>
+</div>
+</div>
+</sc-if>
 <div style="display:flex;gap:9px">
 <div style="flex:1;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 13px">
 <div style="font-family:var(--font-heading);font-size:22px;line-height:1">{{ weekHours }}</div>
@@ -77,15 +88,87 @@ a:hover{color:var(--color-accent-600)}
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">{{ todayEmptyLine }}</div>
 </sc-if>
 <div style="display:flex;flex-direction:column;gap:8px">
-<sc-for list="{{ todayLessons }}" as="l" hint-placeholder-count="5">
-<button onClick="{{ l.open }}" style="width:100%;text-align:left;border:none;cursor:pointer;background:var(--color-surface);border-radius:var(--radius-lg);padding:12px 14px;display:flex;align-items:center;gap:11px" style-hover="background:var(--color-neutral-300)">
-<span style="{{ l.dot }}"></span>
-<span style="flex:1;min-width:0">
-<span style="display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700)">{{ l.subject }} · {{ l.ref }}</span>
-<span style="display:block;font-size:14.5px;line-height:1.3;color:var(--color-text)">{{ l.line }}</span>
-</span>
-<span style="{{ l.chip }}">{{ l.chipLabel }}</span>
+<sc-for list="{{ todayLessons }}" as="l" hint-placeholder-count="4">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);overflow:hidden">
+<div style="display:flex;align-items:center;gap:11px;padding:12px 14px">
+<button onClick="{{ l.check }}" style="{{ l.box }}">{{ l.mark }}</button>
+<button onClick="{{ l.toggle }}" style="flex:1;min-width:0;text-align:left;border:none;background:transparent;cursor:pointer;padding:0">
+<span style="display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700)">{{ l.subject }}</span>
+<span style="display:block;font-size:14.5px;line-height:1.3;color:var(--color-text)">{{ l.ref }}</span>
 </button>
+<span style="{{ l.chip }}">{{ l.chipLabel }}</span>
+</div>
+<sc-if value="{{ l.expanded }}" hint-placeholder-val="{{ false }}">
+<div style="padding:2px 14px 15px;display:flex;flex-direction:column;gap:13px">
+<div style="display:flex;align-items:center;gap:10px;background:var(--color-bg);border-radius:var(--radius-md);padding:10px 12px">
+<span style="font-family:var(--font-heading);font-size:26px;line-height:1;flex:1">{{ l.clock }}</span>
+<button onClick="{{ l.toggleTimer }}" style="{{ l.timerBtn }}" style-hover="opacity:.9">{{ l.timerLabel }}</button>
+<button onClick="{{ l.resetTimer }}" style="border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-neutral-700)">reset</button>
+</div>
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Before · the plan</div>
+<textarea class="input" placeholder="What we'll do…" value="{{ l.before }}" onChange="{{ l.setBefore }}" style="border-radius:var(--radius-md);min-height:56px;padding:11px 13px;font-size:13px;line-height:1.5;background:var(--color-bg)"></textarea>
+</div>
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">After · how it went</div>
+<textarea class="input" placeholder="A sentence is plenty…" value="{{ l.after }}" onChange="{{ l.setAfter }}" style="border-radius:var(--radius-md);min-height:56px;padding:11px 13px;font-size:13px;line-height:1.5;background:var(--color-accent-100);border-color:var(--color-accent-300)"></textarea>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px">
+<sc-for list="{{ l.tags }}" as="t" hint-placeholder-count="4">
+<button onClick="{{ t.toggle }}" style="{{ t.style }}" style-hover="opacity:.85">{{ t.label }}</button>
+</sc-for>
+</div>
+</div>
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Book we read</div>
+<sc-if value="{{ l.hasBook }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:9px;background:var(--color-accent-2-200);border-radius:var(--radius-md);padding:9px 12px">
+<span style="flex:1;font-size:13px;color:var(--color-accent-2-900)">{{ l.book }}</span>
+<button onClick="{{ l.clearBook }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-accent-2-900);font-size:14px">×</button>
+</div>
+</sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
+<sc-for list="{{ l.bookChips }}" as="b" hint-placeholder-count="3">
+<button onClick="{{ b.pick }}" style="{{ b.style }}" style-hover="background:var(--color-neutral-200)">{{ b.title }}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:6px;margin-top:7px">
+<input class="input" placeholder="A new book we read aloud…" value="{{ l.bookDraft }}" onChange="{{ l.setBookDraft }}" style="border-radius:999px;flex:1;font-size:12.5px">
+<button onClick="{{ l.addBook }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Add</button>
+</div>
+</div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ l.statuses }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.pick }}" style="{{ s.style }}" style-hover="opacity:.9">{{ s.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Add to today · picks up where we left off</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{ addChips }}" as="a" hint-placeholder-count="5">
+<button onClick="{{ a.add }}" style="{{ a.style }}" style-hover="opacity:.85">+ {{ a.name }} <span style="{{ a.refStyle }}">{{ a.ref }}</span></button>
+</sc-for>
+</div>
+</div>
+
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+<div style="font-family:var(--font-heading);font-size:17px">Rhythm check</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700)">school days only</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ cadence }}" as="c" hint-placeholder-count="5">
+<div style="{{ c.row }}">
+<span style="{{ c.dot }}"></span>
+<span style="flex:1;min-width:0;font-size:13.5px">{{ c.name }}</span>
+<span style="{{ c.chip }}">{{ c.label }}</span>
+</div>
 </sc-for>
 </div>
 </div>
@@ -106,7 +189,29 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </div>
 
-<button onClick="{{ goAhead }}" style="width:100%;text-align:left;cursor:pointer;border:none;background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px" style-hover="background:var(--color-accent-300)">
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Heads up for {{ tomLabel }}</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin:9px 0 0">
+<sc-for list="{{ tomItems }}" as="t" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:9px">
+<span style="{{ t.dot }}"></span>
+<span style="flex:1;font-size:13px;color:var(--color-accent-900)">{{ t.name }}</span>
+<sc-if value="{{ t.removable }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ t.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-accent-800);font-size:14px;padding:0 2px">×</button>
+</sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ tomEmpty }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12.5px;color:var(--color-accent-900)">Nothing noted yet. Jot down anything you'll need to have out.</div>
+</sc-if>
+</div>
+<div style="display:flex;gap:6px;margin-top:11px">
+<input class="input" placeholder="Bring, buy or remember…" value="{{ tomDraft }}" onChange="{{ setTomDraft }}" style="border-radius:999px;flex:1;font-size:12.5px;background:var(--color-accent-100);border-color:var(--color-accent-300)">
+<button onClick="{{ addTom }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px">Add</button>
+</div>
+</div>
+
+<button onClick="{{ goAhead }}" style="width:100%;text-align:left;cursor:pointer;border:none;background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px" style-hover="background:var(--color-neutral-300)">
 <span style="flex:1">
 <span style="display:block;font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Look ahead · {{ aheadLabel }}</span>
 <span style="display:block;font-size:12.5px;color:var(--color-accent-900);margin-top:2px">{{ aheadSummary }}</span>
@@ -143,23 +248,35 @@ a:hover{color:var(--color-accent-600)}
 
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
 <div style="font-family:var(--font-heading);font-size:16px;margin-bottom:10px">{{ selDayLabel }}</div>
-<div style="display:flex;flex-direction:column;gap:7px">
-<sc-for list="{{ selDayItems }}" as="i" hint-placeholder-count="4">
-<div style="display:flex;align-items:center;gap:10px">
-<span style="{{ i.dot }}"></span>
-<span style="flex:1;font-size:13.5px">{{ i.label }}</span>
-<span style="font-size:11.5px;color:var(--color-neutral-700)">{{ i.right }}</span>
-<sc-if value="{{ i.removable }}" hint-placeholder-val="{{ false }}">
-<button onClick="{{ i.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px">×</button>
-</sc-if>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ planRows }}" as="p" hint-placeholder-count="5">
+<button onClick="{{ p.toggle }}" style="{{ p.row }}" style-hover="background:var(--color-neutral-200)">
+<span style="{{ p.box }}">{{ p.mark }}</span>
+<span style="{{ p.dot }}"></span>
+<span style="flex:1;min-width:0;text-align:left">
+<span style="display:block;font-size:13.5px">{{ p.name }}</span>
+<span style="display:block;font-size:11px;color:var(--color-neutral-700);margin-top:1px">{{ p.ref }}</span>
+</span>
+<span style="font-size:11px;color:var(--color-neutral-700);flex:none">{{ p.right }}</span>
+</button>
+</sc-for>
+</div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin:14px 0 8px">Activities</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ selDayActs }}" as="a" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:10px;font-size:13.5px">
+<span style="width:9px;height:9px;border-radius:999px;flex:none;border:1.5px dashed var(--color-accent-2)"></span>
+<span style="flex:1">{{ a.name }}</span>
+<button onClick="{{ a.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px">×</button>
 </div>
 </sc-for>
 </div>
-<div style="display:flex;gap:7px;margin-top:13px">
+<div style="display:flex;gap:7px;margin-top:10px">
 <input class="input" placeholder="Add an activity — swim, co-op, library…" value="{{ actDraft }}" onChange="{{ setActDraft }}" style="border-radius:999px;flex:1">
 <button onClick="{{ addAct }}" class="btn btn-primary" style="border-radius:999px">Add</button>
 </div>
 </div>
+<div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5">Nothing is assigned to weekdays any more — you build each day, and every subject hands you its next lesson automatically. Mark one done and the queue moves on.</div>
 </div>
 </sc-if>
 
@@ -230,6 +347,7 @@ a:hover{color:var(--color-accent-600)}
 <sc-if value="{{ d.noMats }}" hint-placeholder-val="{{ false }}">
 <div style="font-size:12px;color:var(--color-neutral-700)">Nothing extra to gather.</div>
 </sc-if>
+
 </div>
 <div style="display:flex;gap:7px;margin-top:8px">
 <input class="input" placeholder="Add a material…" value="{{ d.draft }}" onChange="{{ d.setDraft }}" style="border-radius:999px;flex:1;font-size:13px">
@@ -237,6 +355,9 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </div>
 </sc-for>
+<sc-if value="{{ aheadUnplanned }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">Next week isn't built yet. Go to the Week tab, pick a day, and tap the subjects you want — each one hands you its next lesson.</div>
+</sc-if>
 </div>
 </sc-if>
 
@@ -364,6 +485,7 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ copyReport }}" class="btn btn-primary" style="flex:1;border-radius:999px;padding:13px">{{ copyLabel }}</button>
 <button onClick="{{ printReport }}" class="btn btn-secondary" style="flex:1;border-radius:999px;padding:13px">Print / PDF</button>
 </div>
+<button onClick="{{ toggleClosed }}" style="{{ closeBtn }}" style-hover="opacity:.9">{{ closeLabel }}</button>
 </div>
 </sc-if>
 
@@ -414,6 +536,46 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </sc-if>
 
+<sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:16px">
+<div style="display:flex;align-items:baseline;gap:8px">
+<div style="font-family:var(--font-heading);font-size:34px;line-height:1;color:var(--color-accent-800)">{{ allPct }}</div>
+<div style="font-size:12.5px;color:var(--color-accent-900)">of everything loaded</div>
+</div>
+<div style="height:10px;border-radius:999px;background:var(--color-accent-100);overflow:hidden;margin-top:11px"><div style="{{ allFill }}"></div></div>
+<div style="font-size:12px;color:var(--color-accent-900);margin-top:8px">{{ allLine }}</div>
+</div>
+
+<sc-for list="{{ tracks }}" as="t" hint-placeholder-count="5">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="display:flex;align-items:center;gap:9px">
+<span style="{{ t.dot }}"></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:14.5px">{{ t.name }}</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:1px">{{ t.cur }}</span>
+</span>
+<span style="font-family:var(--font-heading);font-size:20px">{{ t.pct }}</span>
+</div>
+<div style="height:9px;border-radius:999px;background:var(--color-neutral-200);overflow:hidden;margin-top:11px"><div style="{{ t.fill }}"></div></div>
+<div style="display:flex;justify-content:space-between;margin-top:8px">
+<span style="font-size:11.5px;color:var(--color-neutral-700)">{{ t.count }}</span>
+<span style="font-size:11.5px;color:var(--color-neutral-700)">{{ t.pace }}</span>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.eta }}</div>
+</div>
+</sc-for>
+<div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5">Pace is measured over the last four weeks of logged lessons.</div>
+<button onClick="{{ goSetup }}" style="width:100%;border:none;cursor:pointer;background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px;text-align:left" style-hover="background:var(--color-neutral-300)">
+<span style="flex:1">
+<span style="display:block;font-size:14.5px;color:var(--color-text)">Subjects, curriculum &amp; backup</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:1px">paste a table of contents, add a subject, export</span>
+</span>
+<span style="font-size:18px;color:var(--color-neutral-600)">›</span>
+</button>
+</div>
+</sc-if>
+
 <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
 <div style="display:flex;flex-direction:column;gap:18px">
 
@@ -436,10 +598,10 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ s.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:12px">remove</button>
 <button onClick="{{ s.toggle }}" style="{{ s.sw }}"><span style="{{ s.knob }}"></span></button>
 </div>
-<div style="display:flex;gap:4px;margin-top:10px">
-<sc-for list="{{ s.days }}" as="d" hint-placeholder-count="7">
-<button onClick="{{ d.toggle }}" style="{{ d.style }}">{{ d.label }}</button>
-</sc-for>
+<div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+<button onClick="{{ s.less }}" class="btn btn-secondary" style="width:28px;height:28px;padding:0;border-radius:999px">–</button>
+<span style="font-size:12.5px;color:var(--color-neutral-800)">{{ s.minsLabel }}</span>
+<button onClick="{{ s.more }}" class="btn btn-secondary" style="width:28px;height:28px;padding:0;border-radius:999px">+</button>
 </div>
 <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:8px">{{ s.meta }}</div>
 </div>
@@ -453,7 +615,23 @@ a:hover{color:var(--color-accent-600)}
 
 <div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px">
 <div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Load a curriculum</div>
-<div style="font-size:12.5px;color:var(--color-accent-900);margin:4px 0 11px;line-height:1.5">Paste the table of contents — one lesson per line. They queue up in order and land on the calendar automatically.</div>
+<div style="font-size:12.5px;color:var(--color-accent-900);margin:4px 0 11px;line-height:1.5">Photograph the table of contents or paste it in — one lesson per line. They queue up in order, and each subject hands you the next one as you build days.</div>
+<label style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1.5px dashed var(--color-accent-600);border-radius:var(--radius-md);padding:12px;font-family:var(--font-heading);font-size:13.5px;color:var(--color-accent-800);margin-bottom:9px" style-hover="background:var(--color-accent-300)">
+Photograph the contents page
+<input type="file" accept="image/*" onChange="{{ tocPhoto }}" style="display:none">
+</label>
+<sc-if value="{{ hasToc }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:9px">
+<div style="{{ tocStyle }}"></div>
+<div style="display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap">
+<button onClick="{{ runOcr }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;border-color:var(--color-accent-600);color:var(--color-accent-800)">Read the text for me</button>
+<button onClick="{{ clearToc }}" style="border:none;background:transparent;cursor:pointer;font-size:12px;color:var(--color-accent-800)">remove photo</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ ocrStatus }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;line-height:1.5;color:var(--color-accent-900);margin-bottom:9px">{{ ocrStatus }}</div>
+</sc-if>
 <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px">
 <sc-for list="{{ curSubjects }}" as="c" hint-placeholder-count="5">
 <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}</button>
@@ -468,12 +646,22 @@ a:hover{color:var(--color-accent-600)}
 </div>
 
 <div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Month-end reminder</div>
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">This device</div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
 {{ storageNote }}
-<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;align-items:center">
 <button onClick="{{ exportData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Export backup</button>
+<label class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;cursor:pointer">Import a file<input type="file" accept="application/json,.json,.txt" onChange="{{ importFile }}" style="display:none"></label>
 <button onClick="{{ resetData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">{{ resetLabel }}</button>
+</div>
+<div style="margin-top:12px">
+<textarea class="input" placeholder="…or paste a lesson list / backup here" value="{{ importPaste }}" onChange="{{ setImportPaste }}" style="border-radius:var(--radius-lg);min-height:74px;padding:12px 14px;font-size:12.5px;line-height:1.5;background:var(--color-bg)"></textarea>
+<div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+<button onClick="{{ importPasted }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px">Load it</button>
+<span style="font-size:11.5px;color:var(--color-accent-800)">{{ importStatus }}</span>
+</div>
 </div>
 </div>
 </div>
@@ -525,26 +713,35 @@ const QS = [
 ];
 const LEVELS = ['Pre-reader', 'GR A', 'GR B', 'GR C', 'GR D', 'GR E', 'GR F', 'GR G', 'GR H', 'GR I', 'GR J'];
 const TAGS = ['clicked', 'needs review', 'struggled', 'loved it'];
+const stLabels = { done: 'Done', partial: 'Partial', skipped: 'Skipped', todo: 'Not yet' };
+const stColors = {
+  done: ['var(--color-accent-2-300)', 'var(--color-accent-2-900)'],
+  partial: ['var(--color-accent-200)', 'var(--color-accent-900)'],
+  skipped: ['var(--color-neutral-300)', 'var(--color-neutral-800)'],
+  todo: ['transparent', 'var(--color-neutral-700)'],
+};
 const uid = () => Math.random().toString(36).slice(2, 9);
 const key = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const parse = (k) => { const p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
 const addDays = (d, n) => { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; };
 const monKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 
-function seed() {
+function seed(todayKey) {
   const S = [
-    ['bible', 'Bible Study', '#3d472b', 15, [1, 2, 3, 4, 5], 'Genesis — creation to Joseph', 'Lesson ', 12, 60],
-    ['math', 'Math', '#c67139', 20, [1, 2, 3, 4, 5], 'Math-U-See Primer', 'Lesson ', 24, 120],
-    ['reading', 'Reading', '#7a8a5e', 20, [1, 2, 3, 4, 5], 'Bob Books, Sets 2–3', 'Book ', 5, 30],
-    ['writing', 'Writing', '#8c491a', 15, [1, 2, 4, 5], 'Handwriting practice', 'Week ', 6, 30],
-    ['french', 'French', '#645c50', 10, [2, 4], 'French for little ones', 'Leçon ', 9, 40],
+    ['bible', 'Bible Study', '#3d472b', 15, 'Genesis — creation to Joseph', 'Lesson ', 12, 60],
+    ['math', 'Math', '#c67139', 20, 'Math-U-See Primer', 'Lesson ', 24, 120],
+    ['reading', 'Reading', '#7a8a5e', 20, 'Bob Books, Sets 2–3', 'Book ', 5, 30],
+    ['writing', 'Writing', '#8c491a', 15, 'Handwriting practice', 'Week ', 6, 30],
+    ['french', 'French', '#645c50', 10, 'French for little ones', 'Leçon ', 9, 40],
   ];
   const subjects = [], cur = {};
-  S.forEach(([id, name, color, mins, days, cname, prefix, from, count]) => {
-    subjects.push({ id, name, color, mins, days, active: true });
+  S.forEach(([id, name, color, mins, cname, prefix, from, count]) => {
+    subjects.push({ id, name, color, mins, active: true });
     cur[id] = { name: cname, pos: 0, items: Array.from({ length: count }, (_, i) => prefix + (from + i)) };
   });
-  return { v: 1, student: { name: 'Liam', grade: 'Kindergarten', level: 2 }, subjects, cur, log: {}, acts: [], mats: [], books: [
+  const log = {};
+  if (todayKey) log[todayKey] = ['bible', 'math', 'reading', 'writing'].map(sid => ({ sid, status: 'todo', secs: 0, before: '', after: '', tags: [] }));
+  return { v: 1, student: { name: 'Liam', grade: 'Kindergarten', level: 2 }, subjects, cur, log, acts: [], mats: [], books: [
     { id: uid(), title: 'Sam and the Bag', author: 'Bob Books, Set 2', level: 'GR B', state: 'now' },
     { id: uid(), title: 'Frog and Toad Are Friends', author: 'Arnold Lobel', level: 'AR 2.9', state: 'now' },
   ], months: {}, installed: false };
@@ -553,14 +750,15 @@ function seed() {
 class Component extends DCLogic {
   state = {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
-    secs: 0, running: false, weekStart: null, selDate: null, month: null, q: 0,
+    secs: 0, running: false, timerKey: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
     bookTab: 'now', albumTab: 'photos', curPick: null, drafts: {}, copied: false, resetArmed: false,
+    tocUrl: null, ocr: '',
   };
 
   componentDidMount() {
     let d;
     try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
-    if (!d || !d.subjects) d = seed();
+    if (!d || !d.subjects) d = seed(key(new Date()));
     let photos = [];
     try { photos = JSON.parse(localStorage.getItem(PKEY)) || []; } catch (e) { photos = []; }
     const today = new Date();
@@ -585,41 +783,64 @@ class Component extends DCLogic {
     try { localStorage.setItem(PKEY, JSON.stringify(photos)); } catch (e) {}
   }
 
-  scheduled(d, dateKey) {
-    const dow = parse(dateKey).getDay();
-    return d.subjects.filter(s => s.active && s.days.includes(dow));
-  }
-  // how many scheduled sittings of `sid` fall in [from, to)
-  offset(d, sid, fromKey, toKey) {
-    let n = 0, cur = parse(fromKey), end = parse(toKey);
-    const s = d.subjects.find(x => x.id === sid);
-    if (!s) return 0;
-    while (cur < end && n < 400) { if (s.active && s.days.includes(cur.getDay())) n++; cur = addDays(cur, 1); }
-    return n;
-  }
-  refFor(d, sid, dateKey) {
+  // ── the queue model ──────────────────────────────────────────────
+  // Subjects are not tied to weekdays. Each carries an ongoing queue
+  // (cur[sid].items) and a pointer (pos). A planned entry has no `ref`; it
+  // resolves to the queue position it will land on, so completing a lesson
+  // shifts everything planned after it. Done and skipped entries snapshot
+  // their `ref` so history never moves.
+  resolveRef(d, sid, dateKey, idx) {
     const c = d.cur[sid];
     if (!c || !c.items.length) return 'No lessons loaded';
-    const todayKey = key(new Date());
-    const off = dateKey > todayKey ? this.offset(d, sid, todayKey, dateKey) : 0;
-    return c.items[c.pos + off] || 'Curriculum finished';
+    const e = (d.log[dateKey] || [])[idx];
+    // a ref is history only once the lesson is finished or skipped; anything
+    // still pending re-resolves (so entries planned under the old model heal)
+    if (e && e.ref && (e.status === 'done' || e.status === 'skipped')) return e.ref;
+    const tKey = key(new Date());
+    let rank = 0;
+    const dates = Object.keys(d.log).sort();
+    for (let di = 0; di < dates.length; di++) {
+      const k = dates[di], arr = d.log[k] || [];
+      for (let i = 0; i < arr.length; i++) {
+        if (k === dateKey && i === idx) return c.items[c.pos + rank] || 'Curriculum finished';
+        const x = arr[i];
+        // only pending entries from today onwards push the queue along
+        if (x.sid === sid && (x.status === 'todo' || x.status === 'partial') && k >= tKey) rank++;
+      }
+    }
+    return c.items[c.pos + rank] || 'Curriculum finished';
   }
   ensure(dateKey) {
     const d = this.state.d;
     if (!d || d.log[dateKey]) return;
-    const subs = this.scheduled(d, dateKey);
-    if (!subs.length) return;
+    this.mutate(dd => { dd.log[dateKey] = []; });
+  }
+  entriesFor(dateKey) { return (this.state.d.log[dateKey] || []); }
+  addEntry(dateKey, sid) {
     this.mutate(dd => {
-      dd.log[dateKey] = subs.map(s => ({
-        sid: s.id, ref: this.refFor(dd, s.id, dateKey), status: 'todo', secs: 0, before: '', after: '', tags: [],
-      }));
+      if (!dd.log[dateKey]) dd.log[dateKey] = [];
+      dd.log[dateKey].push({ sid, status: 'todo', secs: 0, before: '', after: '', tags: [] });
     });
   }
-
-  entriesFor(dateKey) {
-    const d = this.state.d;
-    if (d.log[dateKey]) return d.log[dateKey];
-    return this.scheduled(d, dateKey).map(s => ({ sid: s.id, ref: this.refFor(d, s.id, dateKey), status: 'todo', secs: 0, virtual: true }));
+  removeEntry(dateKey, idx) {
+    this.mutate(dd => { if (dd.log[dateKey]) dd.log[dateKey].splice(idx, 1); });
+  }
+  // school days = days on which any lesson was actually done or part-done
+  schoolDays(d) {
+    return Object.keys(d.log)
+      .filter(k => k <= key(new Date()) && (d.log[k] || []).some(e => e.status === 'done' || e.status === 'partial'))
+      .sort().reverse();
+  }
+  // how many school days have elapsed since this subject was last touched
+  gapFor(d, sid) {
+    const days = this.schoolDays(d), tKey = key(new Date());
+    const todayCounts = days[0] === tKey ? 0 : 1;
+    for (let i = 0; i < days.length; i++) {
+      if ((d.log[days[i]] || []).some(e => e.sid === sid && (e.status === 'done' || e.status === 'partial'))) {
+        return i + todayCounts;
+      }
+    }
+    return null;
   }
 
   openLesson(dateKey, i) {
@@ -627,27 +848,77 @@ class Component extends DCLogic {
     this.ensure(dateKey);
     this.setState(s => ({ screen: 'lesson', lessonDate: dateKey, lessonIdx: i, secs: 0, running: false, stack: s.stack.concat([s.screen]) }));
   }
-  patchEntry(fn) {
-    const { lessonDate, lessonIdx } = this.state;
-    this.mutate(d => { const e = d.log[lessonDate] && d.log[lessonDate][lessonIdx]; if (e) fn(e, d); });
+  patchAt(dateKey, idx, fn) {
+    this.mutate(d => { const e = d.log[dateKey] && d.log[dateKey][idx]; if (e) fn(e, d); });
   }
-  // Commit any running seconds into the entry. Called before every exit path
-  // so time is never silently lost.
+  patchEntry(fn) { this.patchAt(this.state.lessonDate, this.state.lessonIdx, fn); }
+  // Commit any running seconds into whichever entry the timer belongs to.
+  // Called before every exit path so time is never silently lost.
   flushTime() {
-    const add = this.state.secs;
+    const { secs, timerKey, running } = this.state;
     clearInterval(this._t);
-    if (add || this.state.running) this.setState({ secs: 0, running: false });
-    if (add && this.state.lessonDate) this.patchEntry(e => { e.secs = (e.secs || 0) + add; });
-  }
-  tick = () => {
-    if (!this.state.running) {
-      clearInterval(this._t);
-      this._t = setInterval(() => this.setState(s => ({ secs: s.secs + 1 })), 1000);
-      this.setState({ running: true });
-    } else {
-      this.flushTime();
+    if (secs || running) this.setState({ secs: 0, running: false });
+    if (secs && timerKey) {
+      const p = timerKey.split('#');
+      this.patchAt(p[0], +p[1], e => { e.secs = (e.secs || 0) + secs; });
     }
-  };
+  }
+  toggleTimerAt(dateKey, idx) {
+    const k = dateKey + '#' + idx;
+    const wasRunningHere = this.state.running && this.state.timerKey === k;
+    this.flushTime();
+    if (wasRunningHere) return;
+    this._t = setInterval(() => this.setState(s => ({ secs: s.secs + 1 })), 1000);
+    this.setState({ timerKey: k, running: true, secs: 0 });
+  }
+  setStatus(dateKey, idx, k, shownRef) {
+    const cur = (this.state.d.log[dateKey] || [])[idx];
+    const target = cur && cur.status === k ? 'todo' : k; // tap the active one to undo
+    const mine = this.state.timerKey === dateKey + '#' + idx;
+    const add = mine ? this.state.secs : 0;
+    if (mine) { clearInterval(this._t); this.setState({ secs: 0, running: false }); }
+    this.patchAt(dateKey, idx, (e, dd) => {
+      if (add) e.secs = (e.secs || 0) + add;
+      const was = e.status;
+      e.status = target;
+      const c = dd.cur[e.sid];
+      if (target === 'todo' || target === 'partial') delete e.ref; else e.ref = e.ref || shownRef;
+      if (c && target === 'done' && was !== 'done') c.pos = Math.min(c.pos + 1, c.items.length);
+      if (c && was === 'done' && target !== 'done' && c.pos > 0) c.pos -= 1;
+    });
+  }
+  attachBook(dateKey, idx, title) {
+    const t = String(title || '').trim();
+    if (!t) return;
+    this.mutate(dd => {
+      const e = dd.log[dateKey] && dd.log[dateKey][idx];
+      if (e) e.book = t;
+      if (!dd.books.some(b => b.title.toLowerCase() === t.toLowerCase())) {
+        dd.books.unshift({ id: uid(), title: t, author: '', level: '', state: 'now' });
+      }
+    });
+  }
+  loadScript(src) {
+    return new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = () => rej(new Error('offline'));
+      document.head.appendChild(s);
+    });
+  }
+  async runOcr() {
+    if (!this.state.tocUrl) return;
+    this.setState({ ocr: 'Reading the photo — this takes a few seconds…' });
+    try {
+      if (!window.Tesseract) await this.loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js');
+      const out = await window.Tesseract.recognize(this.state.tocUrl, 'eng');
+      const lines = String(out.data.text || '').split('\n').map(x => x.replace(/\s+/g, ' ').trim())
+        .filter(x => x.length > 3);
+      this.setState(s => ({ ocr: lines.length ? 'Read ' + lines.length + ' lines — check them below, then Load.' : 'Could not read that photo. Try a straighter, brighter shot.',
+        drafts: Object.assign({}, s.drafts, { cp: lines.join('\n') }) }));
+    } catch (e) {
+      this.setState({ ocr: 'Reading a photo needs a connection the first time. Online, tap again — or type the lessons below.' });
+    }
+  }
 
   monthStats(mk) {
     const d = this.state.d, per = {}, out = { secs: 0, lessons: 0, days: 0, per };
@@ -684,6 +955,48 @@ class Component extends DCLogic {
     ev.target.value = '';
   };
 
+  // Accepts either a full backup ({data, photos}) or an additive patch
+  // ({curriculum, books, activities, materials, subjects}) written by hand.
+  applyImport(text) {
+    const say = (m) => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { imp: m }) }));
+    let j;
+    try { j = JSON.parse(text); } catch (e) { say("That isn't valid JSON — check for a stray comma."); return; }
+    if (j.data && j.data.subjects) {
+      this.save(j.data); this.savePhotos(j.photos || []);
+      this.setState({ d: j.data, screen: 'today', stack: [] }, () => this.ensure(key(new Date())));
+      say('Backup restored.'); return;
+    }
+    const done = [];
+    const tKey = key(new Date());
+    this.mutate(dd => {
+      const findSub = (nm) => dd.subjects.find(s => s.name.toLowerCase() === String(nm || '').toLowerCase());
+      (j.subjects || []).forEach(s => {
+        if (findSub(s.name)) return;
+        const id = 's' + uid();
+        dd.subjects.push({ id, name: s.name, color: s.color || ['#c67139', '#7a8a5e', '#8c491a', '#3d472b', '#645c50'][dd.subjects.length % 5],
+          mins: s.mins || 15, days: s.days || [1, 2, 3, 4, 5], active: true });
+        dd.cur[id] = { name: 'Not loaded', pos: 0, items: [] };
+        done.push('added ' + s.name);
+      });
+      (j.curriculum || []).forEach(c => {
+        const s = findSub(c.subject);
+        if (!s || !c.items || !c.items.length) return;
+        dd.cur[s.id] = { name: c.name || 'Imported', pos: 0, items: c.items.map(x => String(x).trim()).filter(Boolean) };
+        done.push(c.items.length + ' ' + s.name + ' lessons');
+      });
+      (j.books || []).forEach(b => {
+        if (!b.title) return;
+        dd.books.push({ id: uid(), title: b.title, author: b.author || '', level: b.level || '', state: b.state || 'list' });
+      });
+      if ((j.books || []).length) done.push((j.books || []).length + ' books');
+      (j.activities || []).forEach(a => { if (a.date && a.name) dd.acts.push({ id: uid(), date: a.date, name: a.name }); });
+      if ((j.activities || []).length) done.push((j.activities || []).length + ' activities');
+      (j.materials || []).forEach(m => { if (m.date && m.name) dd.mats.push({ id: uid(), date: m.date, name: m.name, have: !!m.have, src: m.src || 'you' }); });
+      if ((j.materials || []).length) done.push((j.materials || []).length + ' materials');
+    }, () => this.ensure(tKey));
+    say(done.length ? 'Loaded: ' + done.join(', ') + '.' : 'Nothing recognised in that file.');
+  }
+
   reportText(mk) {
     const d = this.state.d, st = this.monthStats(mk), m = d.months[mk] || {};
     const dt = parse(mk + '-01');
@@ -710,15 +1023,17 @@ class Component extends DCLogic {
     const chip = (bg, fg, bd) => ({ fontSize: 10.5, padding: '4px 9px', borderRadius: 999, flex: 'none', whiteSpace: 'nowrap', background: bg, color: fg, border: bd || 'none' });
     const seg = (on) => ({ flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '9px 4px', fontFamily: 'var(--font-heading)', fontSize: 12.5, background: on ? 'var(--color-bg)' : 'transparent', color: on ? 'var(--color-text)' : 'var(--color-neutral-700)', boxShadow: on ? 'var(--shadow-sm)' : 'none' });
     const box = (on) => ({ width: 20, height: 20, flex: 'none', borderRadius: 7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', background: on ? 'var(--color-accent-2)' : 'transparent', border: '1.5px solid ' + (on ? 'var(--color-accent-2)' : 'var(--color-neutral-400)') });
+    const mins = (secs) => secs >= 30 ? Math.max(1, Math.round(secs / 60)) + ' min' : 'under a minute';
     const draft = (k) => st.drafts[k] || '';
     const setDraft = (k) => (ev) => { const v = ev.target.value; this.setState(s => ({ drafts: Object.assign({}, s.drafts, { [k]: v }) })); };
     const clearDraft = (k) => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { [k]: '' }) }));
 
     const today = new Date(), tKey = key(today);
-    const tabRoots = ['today', 'week', 'books', 'report', 'setup'];
+    const tabRoots = ['today', 'week', 'progress', 'books', 'report'];
     const titles = {
       today: [DOW[today.getDay()] + ', ' + MON[today.getMonth()].slice(0, 3) + ' ' + today.getDate(), d.student.name + ' · ' + d.student.grade],
-      week: ['This week', 'lessons run in order, no clock times'],
+      week: ['Build a day', 'pick a day, check off subjects'],
+      progress: ['Curriculum progress', 'where we are in everything'],
       lesson: ['Lesson', st.lessonDate === tKey ? 'today' : (st.lessonDate || '')],
       ahead: ['Look ahead', 'materials for next week'],
       books: ['Books', d.student.name + "'s reading"],
@@ -737,6 +1052,100 @@ class Component extends DCLogic {
     for (let i = 0; i < 7; i++) { const k = key(addDays(wkStartToday, i)); (d.log[k] || []).forEach(e => { weekSecs += e.secs || 0; }); }
     const mstats = this.monthStats(monKey(today));
 
+    // ── tomorrow: what's coming and what to have ready
+    const tomorrow = addDays(today, 1), tomKey = key(tomorrow);
+    const tomItems = (d.log[tomKey] || []).map((e, i) => ({ name: sub(e.sid).name + ' · ' + this.resolveRef(d, e.sid, tomKey, i), kind: 'lesson',
+      dot: dot(sub(e.sid).color, 8), remove: null, removable: false }))
+      .concat(d.acts.filter(a => a.date === tomKey).map(a => ({ name: a.name, kind: 'activity',
+        dot: { width: 8, height: 8, borderRadius: 999, flex: 'none', display: 'inline-block', border: '1.5px dashed var(--color-accent-2)' },
+        removable: true, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })))
+      .concat(d.mats.filter(m => m.date === tomKey).map(m => ({ name: m.name + (m.have ? ' — ready' : ' — to gather'), kind: 'material',
+        dot: dot(m.have ? 'var(--color-accent-2)' : 'var(--color-accent)', 8),
+        removable: true, remove: () => this.mutate(dd => { dd.mats = dd.mats.filter(x => x.id !== m.id); }) })));
+
+    // month-end nudge: last month if never closed out, else the current month
+    // once we're inside its final five days
+    const curMk = monKey(today);
+    const prevDt = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const prevMk = monKey(prevDt);
+    const daysLeft = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() - today.getDate();
+    const closedM = (k) => !!(d.months[k] && d.months[k].closed);
+    let nudgeMk = null;
+    if (!closedM(prevMk) && this.monthStats(prevMk).lessons > 0) nudgeMk = prevMk;
+    else if (daysLeft <= 5 && !closedM(curMk) && mstats.lessons > 0) nudgeMk = curMk;
+
+    // ── one expandable lesson row: timer, notes, book, completion
+    const rowFor = (dk, i, e) => {
+      const s = sub(e.sid), tk = dk + '#' + i;
+      const ref = this.resolveRef(d, e.sid, dk, i);
+      const running = st.running && st.timerKey === tk;
+      const live = (e.secs || 0) + (st.timerKey === tk ? st.secs : 0);
+      const finished = e.status === 'done';
+      return {
+        subject: s.name, ref, dot: dot(s.color),
+        expanded: st.expanded === tk,
+        toggle: () => this.setState(x => ({ expanded: x.expanded === tk ? null : tk })),
+        box: { width: 26, height: 26, flex: 'none', borderRadius: 9, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 14, color: '#fff', background: finished ? 'var(--color-accent-2)' : 'transparent',
+          border: '1.5px solid ' + (finished ? 'var(--color-accent-2)' : 'var(--color-neutral-400)') },
+        mark: finished ? '✓' : '',
+        check: () => this.setStatus(dk, i, 'done', ref),
+        chipLabel: e.status === 'todo' ? (e.secs ? mins(e.secs) : s.mins + ' min') : (stLabels[e.status] || e.status),
+        chip: e.status === 'todo' ? chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)')
+          : chip((stColors[e.status] || stColors.todo)[0], (stColors[e.status] || stColors.todo)[1]),
+        clock: String(Math.floor(live / 60)).padStart(2, '0') + ':' + String(live % 60).padStart(2, '0'),
+        timerLabel: running ? 'Pause & log' : (e.secs ? 'Keep going' : 'Start'),
+        timerBtn: { cursor: 'pointer', border: 'none', borderRadius: 999, padding: '10px 18px', fontFamily: 'var(--font-heading)', fontSize: 13.5,
+          background: running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: running ? '#fff' : 'var(--color-bg)' },
+        toggleTimer: () => this.toggleTimerAt(dk, i),
+        resetTimer: () => { if (st.timerKey === tk) { clearInterval(this._t); this.setState({ secs: 0, running: false }); } this.patchAt(dk, i, x => { x.secs = 0; }); },
+        before: e.before || '', setBefore: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { x.before = v; }); },
+        after: e.after || '', setAfter: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { x.after = v; }); },
+        tags: TAGS.map(label => {
+          const on = (e.tags || []).includes(label);
+          return { label, toggle: () => this.patchAt(dk, i, x => { x.tags = on ? (x.tags || []).filter(y => y !== label) : (x.tags || []).concat([label]); }),
+            style: { cursor: 'pointer', borderRadius: 999, padding: '6px 12px', fontSize: 11.5, border: '1.5px solid ' + (on ? 'var(--color-accent-2-600)' : 'var(--color-neutral-400)'),
+              background: on ? 'var(--color-accent-2-300)' : 'transparent', color: on ? 'var(--color-accent-2-900)' : 'var(--color-neutral-800)' } };
+        }),
+        statuses: ['done', 'partial', 'skipped'].map(kk => ({
+          label: stLabels[kk], pick: () => this.setStatus(dk, i, kk, ref),
+          style: { flex: 1, cursor: 'pointer', borderRadius: 999, padding: '10px 4px', fontFamily: 'var(--font-heading)', fontSize: 12.5,
+            border: '1.5px solid ' + (e.status === kk ? 'transparent' : 'var(--color-neutral-400)'),
+            background: e.status === kk ? stColors[kk][0] : 'transparent', color: e.status === kk ? stColors[kk][1] : 'var(--color-neutral-800)' } })),
+        book: e.book || '', hasBook: !!e.book,
+        bookChips: d.books.filter(b => b.state === 'now' || b.state === 'list').slice(0, 6).map(b => ({
+          title: b.title, pick: () => this.attachBook(dk, i, b.title),
+          style: { cursor: 'pointer', borderRadius: 999, padding: '6px 12px', fontSize: 11.5, border: '1.5px solid var(--color-neutral-400)', background: 'transparent', color: 'var(--color-neutral-800)' } })),
+        bookDraft: draft('bk' + tk), setBookDraft: setDraft('bk' + tk),
+        addBook: () => { const v = draft('bk' + tk).trim(); if (!v) return; this.attachBook(dk, i, v); clearDraft('bk' + tk); },
+        clearBook: () => this.patchAt(dk, i, x => { delete x.book; }),
+      };
+    };
+
+    // ── cadence: how long since each subject, in school days
+    const gapChip = (g) => g === null ? chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)')
+      : g === 0 ? chip('var(--color-accent-2-300)', 'var(--color-accent-2-900)')
+        : g <= 2 ? chip('var(--color-neutral-200)', 'var(--color-neutral-800)')
+          : chip('var(--color-accent-300)', 'var(--color-accent-900)');
+    const gapLabel = (g) => g === null ? 'not started' : g === 0 ? 'done today' : g === 1 ? 'last school day' : g + ' school days ago';
+    const cadence = S.filter(s => s.active).map(s => {
+      const g = this.gapFor(d, s.id);
+      return { name: s.name, dot: dot(s.color), label: gapLabel(g), chip: gapChip(g), _g: g === null ? 99 : g,
+        row: { display: 'flex', alignItems: 'center', gap: 10, background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: '10px 13px' } };
+    }).sort((a, b) => b._g - a._g);
+
+    // ── day builder chips: tap a subject to drop its next lesson on a day
+    const addChipsFor = (dateKey) => S.filter(s => s.active).map(s => {
+      const c = d.cur[s.id] || { items: [], pos: 0 };
+      const pending = (dk) => (d.log[dk] || []).filter(e => e.sid === s.id && (e.status === 'todo' || e.status === 'partial')).length;
+      const tk = key(new Date());
+      const ahead = Object.keys(d.log).filter(k => k >= tk && k <= dateKey).reduce((n, k) => n + pending(k), 0);
+      const nextRef = c.items.length ? (c.items[c.pos + ahead] || 'finished') : 'none loaded';
+      return { name: s.name, ref: nextRef, add: () => this.addEntry(dateKey, s.id),
+        style: { cursor: 'pointer', border: '1.5px solid ' + s.color, background: 'transparent', color: 'var(--color-text)', borderRadius: 999, padding: '8px 13px', fontSize: 12.5, display: 'inline-flex', alignItems: 'center', gap: 6 },
+        refStyle: { fontSize: 10.5, color: 'var(--color-neutral-700)' } };
+    });
+
     // ── week strip
     const ws = st.weekStart ? parse(st.weekStart) : wkStartToday;
     const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -747,15 +1156,15 @@ class Component extends DCLogic {
         dow: DOW[dt.getDay()], date: dt.getDate(), pick: () => this.setState({ selDate: k }),
         col: { cursor: 'pointer', border: 'none', textAlign: 'center', padding: '7px 3px 7px', borderRadius: 16, background: ents.length ? 'var(--color-surface)' : 'var(--color-neutral-200)', outline: k === st.selDate ? '2px solid var(--color-accent)' : 'none' },
         num: { display: 'block', fontFamily: 'var(--font-heading)', fontSize: 14, color: k === tKey ? 'var(--color-accent-700)' : 'var(--color-text)' },
-        chips: ents.map(e => ({ label: sub(e.sid).name.slice(0, 4), style: { fontSize: 8.5, padding: '5px 1px', borderRadius: 8, background: sub(e.sid).color, color: '#fff', overflow: 'hidden', opacity: e.status === 'done' ? 0.55 : 1 } }))
+        chips: ents.map(e => ({ label: sub(e.sid).name.slice(0, 4), style: { fontSize: 8.5, padding: '5px 1px', borderRadius: 8, background: sub(e.sid).color, color: '#fff', overflow: 'hidden', opacity: e.status === 'done' ? 0.5 : e.status === 'skipped' ? 0.3 : 1 } }))
           .concat(acts.map(a => ({ label: a.name.slice(0, 4), style: { fontSize: 8.5, padding: '4px 1px', borderRadius: 8, border: '1.5px dashed var(--color-accent-2)', color: 'var(--color-accent-2-800)', overflow: 'hidden' } }))),
       };
     });
     const selK = st.selDate || tKey, selDt = parse(selK);
     const selItems = this.entriesFor(selK).map((e, i) => ({
-      dot: dot(sub(e.sid).color), label: sub(e.sid).name + ' · ' + e.ref,
-      right: e.secs ? Math.round(e.secs / 60) + ' min' : (e.status === 'done' ? 'done' : sub(e.sid).mins + ' min'),
-      removable: false, remove: () => {},
+      dot: dot(sub(e.sid).color), label: sub(e.sid).name + ' · ' + this.resolveRef(d, e.sid, selK, i),
+      right: e.secs ? mins(e.secs) : (e.status === 'todo' ? sub(e.sid).mins + ' min' : String(stLabels[e.status] || e.status).toLowerCase()),
+      removable: e.status === 'todo', remove: () => this.removeEntry(selK, i),
     })).concat(d.acts.filter(a => a.date === selK).map(a => ({
       dot: { width: 10, height: 10, borderRadius: 999, flex: 'none', display: 'inline-block', border: '1.5px dashed var(--color-accent-2)' },
       label: a.name, right: 'activity', removable: true,
@@ -766,13 +1175,17 @@ class Component extends DCLogic {
     const lEnts = (st.lessonDate && d.log[st.lessonDate]) || [];
     const le = lEnts[st.lessonIdx] || { sid: S[0] && S[0].id, ref: '—', status: 'todo', secs: 0, before: '', after: '', tags: [] };
     const lsub = sub(le.sid);
-    const totalSecs = (le.secs || 0) + st.secs;
-    const stLabels = { done: 'Done', partial: 'Partial', skipped: 'Skipped' };
-    const stColors = { done: ['var(--color-accent-2-300)', 'var(--color-accent-2-900)'], partial: ['var(--color-accent-200)', 'var(--color-accent-900)'], skipped: ['var(--color-neutral-300)', 'var(--color-neutral-800)'] };
+    const lRef = st.lessonDate ? this.resolveRef(d, le.sid, st.lessonDate, st.lessonIdx) : (le.ref || '—');
+    const lTk = st.lessonDate + '#' + st.lessonIdx;
+    const lRunning = st.running && st.timerKey === lTk;
+    const totalSecs = (le.secs || 0) + (st.timerKey === lTk ? st.secs : 0);
 
     // ── look ahead (next week)
     const aheadStart = addDays(wkStartToday, 7);
-    const aheadDays = Array.from({ length: 7 }, (_, i) => addDays(aheadStart, i)).filter(dt => this.scheduled(d, key(dt)).length || d.acts.some(a => a.date === key(dt)));
+    const aheadDays = Array.from({ length: 7 }, (_, i) => addDays(aheadStart, i)).filter(dt => {
+      const k = key(dt);
+      return (d.log[k] || []).length || d.acts.some(a => a.date === k) || d.mats.some(m => m.date === k);
+    });
     const aheadMats = d.mats.filter(m => m.date >= key(aheadStart) && m.date <= key(addDays(aheadStart, 6)));
     const aheadTodo = aheadMats.filter(m => !m.have).length;
 
@@ -781,6 +1194,36 @@ class Component extends DCLogic {
     const nextState = { list: 'now', now: 'done', done: 'list' };
     const actionLabel = { list: 'Start', now: 'Finished', done: 'To list' };
     const lvl = LEVELS[d.student.level] || 'GR B';
+
+    // ── curriculum trackers: pace over the last four weeks, and an ETA
+    const fourWeeksAgo = key(addDays(today, -28));
+    const doneSince = (sid, fromKey) => Object.keys(d.log).filter(k => k >= fromKey && k <= key(today))
+      .reduce((n, k) => n + (d.log[k] || []).filter(e => e.sid === sid && e.status === 'done').length, 0);
+    const tracks = S.map(s => {
+      const c = d.cur[s.id] || { name: 'Not loaded', pos: 0, items: [] };
+      const total = c.items.length, pos = Math.min(c.pos, total);
+      const pct = total ? Math.round(pos / total * 100) : 0;
+      const recent = doneSince(s.id, fourWeeksAgo);
+      const perWeek = recent / 4;
+      const left = total - pos;
+      // an ETA off one or two lessons is noise, not information
+      const enough = recent >= 4;
+      const weeks = enough && perWeek > 0 ? Math.ceil(left / perWeek) : null;
+      const finish = weeks !== null ? addDays(today, weeks * 7) : null;
+      return {
+        name: s.name, dot: dot(s.color, 11),
+        cur: c.name + (total ? ' · next: ' + (c.items[pos] || 'finished') : ' · nothing loaded'),
+        pct: total ? pct + '%' : '—',
+        count: total ? pos + ' / ' + total + ' lessons' : 'no lessons loaded',
+        pace: enough ? perWeek.toFixed(1) + ' a week' : recent ? recent + ' in 4 weeks' : 'no pace yet',
+        eta: !total ? 'Paste its contents in Setup.' : left === 0 ? 'Finished — well done.'
+          : finish ? left + ' left · on this pace, done around ' + MON[finish.getMonth()] + ' ' + finish.getFullYear()
+            : left + ' lessons left · a few more weeks of history and I can estimate a finish date',
+        fill: { width: pct + '%', height: '100%', borderRadius: 999, background: s.color },
+      };
+    });
+    const allTotal = S.reduce((n, s) => n + ((d.cur[s.id] || { items: [] }).items.length), 0);
+    const allDone = S.reduce((n, s) => n + Math.min((d.cur[s.id] || { pos: 0, items: [] }).pos, (d.cur[s.id] || { items: [] }).items.length), 0);
 
     // ── report
     const mk = st.month || monKey(today), mdt = parse(mk + '-01');
@@ -793,7 +1236,14 @@ class Component extends DCLogic {
       showBack: st.stack.length > 0,
       back: () => { this.flushTime(); this.setState(s => ({ screen: s.stack[s.stack.length - 1] || 'today', stack: s.stack.slice(0, -1) })); },
       goSetup: () => { this.flushTime(); this.setState({ screen: 'setup', stack: [] }); },
-      showInstall: !d.installed && st.screen === 'today',
+      showNudge: !!nudgeMk,
+      nudgeTitle: nudgeMk === curMk ? MON[today.getMonth()] + ' is nearly done' : MON[prevDt.getMonth()] + ' is still open',
+      nudgeLine: nudgeMk === curMk
+        ? daysLeft + (daysLeft === 1 ? ' day left. ' : ' days left. ') + 'Write up the month, ask ' + d.student.name + ' his five questions, and export a backup while you\'re there.'
+        : 'You never closed out ' + MON[prevDt.getMonth()] + ' — ' + (this.monthStats(prevMk).secs / 3600).toFixed(1) + ' hours are logged and waiting for a write-up.',
+      nudgeReport: () => this.setState({ screen: 'report', month: nudgeMk, stack: [] }),
+      nudgeCheckin: () => this.setState({ screen: 'checkin', month: nudgeMk, q: 0, stack: ['report'] }),
+      showInstall: !d.installed && st.screen === 'today' && !nudgeMk,
       dismissInstall: () => this.mutate(dd => { dd.installed = true; }),
 
       isToday: st.screen === 'today', isWeek: st.screen === 'week', isLesson: st.screen === 'lesson',
@@ -803,26 +1253,28 @@ class Component extends DCLogic {
       weekHours: (weekSecs / 3600).toFixed(1), monthLessons: mstats.lessons, booksDone: d.books.filter(b => b.state === 'done').length,
       todayProgress: tEntries.length ? doneCount + ' of ' + tEntries.length + ' done' : '',
       todayEmpty: !tEntries.length,
-      todayEmptyLine: this.scheduled(d, tKey).length ? 'Tap Today again to lay out the day.' : 'No school scheduled today. Enjoy it.',
-      todayLessons: tEntries.map((e, i) => ({
-        subject: sub(e.sid).name, ref: e.ref, line: e.after ? e.after.slice(0, 60) : (e.before ? e.before.slice(0, 60) : 'No notes yet'),
-        dot: dot(sub(e.sid).color),
-        chipLabel: e.status === 'todo' ? (e.secs ? Math.round(e.secs / 60) + ' min' : sub(e.sid).mins + ' min') : stLabels[e.status],
-        chip: e.status === 'todo' ? chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)') : chip(stColors[e.status][0], stColors[e.status][1]),
-        open: () => this.openLesson(tKey, i),
-      })),
+      todayEmptyLine: 'Nothing on today yet. Tap a subject below and it picks up its next lesson — or leave the day empty, that counts too.',
+      addChips: addChipsFor(tKey),
+      cadence: cadence,
+      todayLessons: tEntries.map((e, i) => rowFor(tKey, i, e)),
+      tomLabel: DOW[tomorrow.getDay()] + ', ' + MON[tomorrow.getMonth()].slice(0, 3) + ' ' + tomorrow.getDate(),
+      tomItems: tomItems,
+      tomEmpty: !tomItems.length,
+      tomDraft: draft('tom'), setTomDraft: setDraft('tom'),
+      addTom: () => { const v = draft('tom').trim(); if (!v) return; this.mutate(dd => { dd.mats.push({ id: uid(), date: tomKey, name: v, have: false, src: 'you' }); }, () => clearDraft('tom')); },
       todayActs: d.acts.filter(a => a.date === tKey).map(a => ({ name: a.name, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })),
       noActs: !d.acts.some(a => a.date === tKey),
       goAhead: () => this.setState(s => ({ screen: 'ahead', stack: s.stack.concat([s.screen]) })),
       aheadLabel: 'week of ' + MON[aheadStart.getMonth()].slice(0, 3) + ' ' + aheadStart.getDate(),
       aheadSummary: aheadMats.length ? aheadTodo + ' of ' + aheadMats.length + ' materials still to gather' : 'add what you need to gather',
       aheadHeadline: aheadTodo ? aheadTodo + ' things to get before Monday' : 'Nothing left to gather',
+      aheadUnplanned: !aheadDays.length,
       aheadDays: aheadDays.map(dt => {
         const k = key(dt), dk = 'mat-' + k;
         const mats = d.mats.filter(m => m.date === k);
         return {
           day: DOW[dt.getDay()] + ', ' + MON[dt.getMonth()].slice(0, 3) + ' ' + dt.getDate(),
-          plan: this.scheduled(d, k).map(s => s.name).join(' · ') || 'activities only',
+          plan: (d.log[k] || []).map((e, i) => sub(e.sid).name).join(' · ') || 'activities only',
           mats: mats.map(m => ({
             name: m.name, box: box(m.have), mark: m.have ? '✓' : '',
             chip: chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)'),
@@ -841,17 +1293,51 @@ class Component extends DCLogic {
       thisWeek: () => this.setState({ weekStart: key(wkStartToday), selDate: tKey }),
       weekDays,
       selDayLabel: DOW[selDt.getDay()] + ', ' + MON[selDt.getMonth()].slice(0, 3) + ' ' + selDt.getDate(),
-      selDayItems: selItems,
+      selDayActs: d.acts.filter(a => a.date === selK).map(a => ({ name: a.name, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })),
+      planRows: S.filter(s => s.active).map(s => {
+        const arr = d.log[selK] || [];
+        const at = arr.findIndex(e => e.sid === s.id && (e.status === 'todo' || e.status === 'partial'));
+        const doneAt = arr.findIndex(e => e.sid === s.id && (e.status === 'done' || e.status === 'skipped'));
+        const on = at >= 0, closed = doneAt >= 0;
+        const c = d.cur[s.id] || { items: [], pos: 0 };
+        const ref = on ? this.resolveRef(d, s.id, selK, at)
+          : closed ? (arr[doneAt].ref || '—')
+            : (c.items.length ? (c.items[c.pos + Object.keys(d.log).filter(k => k >= tKey && k <= selK).reduce((n, k) => n + (d.log[k] || []).filter(e => e.sid === s.id && (e.status === 'todo' || e.status === 'partial')).length, 0)] || 'finished') : 'nothing loaded');
+        return {
+          name: s.name, ref, dot: dot(s.color),
+          right: closed ? (stLabels[arr[doneAt].status] || '') : on ? 'on this day' : 'tap to add',
+          box: { width: 24, height: 24, flex: 'none', borderRadius: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff',
+            background: closed ? 'var(--color-accent-2)' : on ? s.color : 'transparent',
+            border: '1.5px solid ' + (closed ? 'var(--color-accent-2)' : on ? s.color : 'var(--color-neutral-400)') },
+          mark: closed ? '✓' : on ? '·' : '',
+          row: { width: '100%', cursor: 'pointer', border: 'none', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: '11px 13px', display: 'flex', alignItems: 'center', gap: 11 },
+          toggle: () => { if (closed) { this.openLesson(selK, doneAt); return; } if (on) this.removeEntry(selK, at); else this.addEntry(selK, s.id); },
+        };
+      }),
+      dayAddChips: addChipsFor(selK),
       actDraft: draft('act'), setActDraft: setDraft('act'),
       addAct: () => { const v = draft('act').trim(); if (!v) return; this.mutate(dd => { dd.acts.push({ id: uid(), date: selK, name: v }); }, () => clearDraft('act')); },
 
-      lesson: { subject: lsub.name, ref: le.ref, before: le.before || '', after: le.after || '', dot: dot(lsub.color, 11) },
+      lesson: { subject: lsub.name, ref: lRef, before: le.before || '', after: le.after || '', dot: dot(lsub.color, 11) },
       clock: String(Math.floor(totalSecs / 60)).padStart(2, '0') + ':' + String(totalSecs % 60).padStart(2, '0'),
-      timerNote: le.secs ? Math.round(le.secs / 60) + ' min already logged · planned ' + lsub.mins : 'planned ' + lsub.mins + ' min',
-      timerLabel: st.running ? 'Pause & log' : (le.secs ? 'Keep going' : 'Start lesson'),
-      timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: st.running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: st.running ? '#fff' : 'var(--color-bg)' },
-      toggleTimer: this.tick,
+      timerNote: le.secs ? mins(le.secs) + ' already logged · planned ' + lsub.mins + ' min' : 'planned ' + lsub.mins + ' min',
+      timerLabel: lRunning ? 'Pause & log' : (le.secs ? 'Keep going' : 'Start lesson'),
+      timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: lRunning ? 'var(--color-accent-2)' : 'var(--color-accent)', color: lRunning ? '#fff' : 'var(--color-bg)' },
+      toggleTimer: () => this.toggleTimerAt(st.lessonDate, st.lessonIdx),
       resetTimer: () => { clearInterval(this._t); this.setState({ secs: 0, running: false }); this.patchEntry(e => { e.secs = 0; }); },
+      tocUrl: st.tocUrl, hasToc: !!st.tocUrl,
+      tocStyle: { width: '100%', height: 200, borderRadius: 'var(--radius-md)', backgroundImage: 'url(' + (st.tocUrl || '') + ')', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: 'var(--color-accent-100)' },
+      ocrStatus: st.ocr,
+      runOcr: () => this.runOcr(),
+      clearToc: () => this.setState({ tocUrl: null, ocr: '' }),
+      tocPhoto: (ev) => {
+        const f = ev.target.files && ev.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => this.setState({ tocUrl: String(r.result), ocr: 'Photo loaded. Read it automatically, or type the lessons underneath.' });
+        r.readAsDataURL(f);
+        ev.target.value = '';
+      },
       setBefore: (ev) => { const v = ev.target.value; this.patchEntry(e => { e.before = v; }); },
       setAfter: (ev) => { const v = ev.target.value; this.patchEntry(e => { e.after = v; }); },
       tags: TAGS.map(label => {
@@ -861,16 +1347,10 @@ class Component extends DCLogic {
       }),
       statusBtns: ['done', 'partial', 'skipped'].map(k => ({
         label: stLabels[k],
-        pick: () => { const add = st.secs; clearInterval(this._t); if (add || st.running) this.setState({ secs: 0, running: false }); this.patchEntry((e, dd) => {
-          if (add) e.secs = (e.secs || 0) + add;
-          const was = e.status; e.status = k;
-          const c = dd.cur[e.sid];
-          if (c && k === 'done' && was !== 'done' && c.items[c.pos] === e.ref) c.pos = Math.min(c.pos + 1, c.items.length);
-          if (c && was === 'done' && k !== 'done' && c.pos > 0 && c.items[c.pos - 1] === e.ref) c.pos -= 1;
-        }); },
+        pick: () => this.setStatus(st.lessonDate, st.lessonIdx, k, le.ref || lRef),
         style: { flex: 1, cursor: 'pointer', borderRadius: 999, padding: '11px 4px', fontFamily: 'var(--font-heading)', fontSize: 13, border: '1.5px solid ' + (le.status === k ? 'transparent' : 'var(--color-neutral-400)'), background: le.status === k ? stColors[k][0] : 'transparent', color: le.status === k ? stColors[k][1] : 'var(--color-neutral-800)' },
       })),
-      advanceNote: 'Marking done moves ' + lsub.name + ' to the next lesson in the curriculum.',
+      advanceNote: 'Done moves ' + lsub.name + ' to its next lesson. Partial and Skipped leave the queue where it is. Tap the same button again to undo.',
 
       levelShort: lvl.replace('GR ', '') || '·', levelName: lvl === 'Pre-reader' ? 'Pre-reader' : 'Guided Reading ' + lvl.replace('GR ', ''),
       levelNote: 'tap + when he moves up · used to flag stretch books',
@@ -913,6 +1393,12 @@ class Component extends DCLogic {
         if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
         this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1800); },
       printReport: () => window.print(),
+      closeLabel: mrec.closed ? '✓ ' + MON[mdt.getMonth()] + ' is closed out — tap to reopen' : 'Mark ' + MON[mdt.getMonth()] + ' complete',
+      closeBtn: { width: '100%', cursor: 'pointer', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 13.5,
+        border: mrec.closed ? '1.5px solid transparent' : '1.5px solid var(--color-neutral-400)',
+        background: mrec.closed ? 'var(--color-accent-2-300)' : 'transparent',
+        color: mrec.closed ? 'var(--color-accent-2-900)' : 'var(--color-neutral-800)' },
+      toggleClosed: () => this.mutate(dd => { const m = dd.months[mk] || {}; m.closed = !m.closed; dd.months[mk] = m; }),
 
       checkinTitle: 'Ask ' + d.student.name + ', type what he says',
       question: QS[st.q], answer: answers[st.q] || '',
@@ -936,6 +1422,12 @@ class Component extends DCLogic {
       noPhotos: !st.photos.some(p => p.kind === st.albumTab),
       emptyAlbumLine: st.albumTab === 'photos' ? 'Photos live on this device only — snap the nature walk, the volcano, the finished page.' : 'Work samples: handwriting pages, drawings, a photo of a finished worksheet.',
 
+      isProgress: st.screen === 'progress',
+      allPct: allTotal ? Math.round(allDone / allTotal * 100) + '%' : '—',
+      allFill: { width: (allTotal ? Math.round(allDone / allTotal * 100) : 0) + '%', height: '100%', borderRadius: 999, background: 'var(--color-accent)' },
+      allLine: allTotal ? allDone + ' of ' + allTotal + ' lessons done across ' + tracks.length + ' subjects · ' + (allTotal - allDone) + ' to go' : 'Load a curriculum in Setup to see progress here.',
+      tracks: tracks,
+
       studentName: d.student.name, setStudentName: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.student.name = v; }); },
       studentGrade: d.student.grade, setStudentGrade: (ev) => { const v = ev.target.value; this.mutate(dd => { dd.student.grade = v; }); },
       subjectRows: S.map(s => ({
@@ -945,11 +1437,9 @@ class Component extends DCLogic {
         remove: () => this.mutate(dd => { dd.subjects = dd.subjects.filter(y => y.id !== s.id); }),
         sw: { width: 44, height: 26, flex: 'none', border: 'none', cursor: 'pointer', borderRadius: 999, padding: 3, display: 'flex', justifyContent: s.active ? 'flex-end' : 'flex-start', background: s.active ? 'var(--color-accent-2)' : 'var(--color-neutral-400)' },
         knob: { width: 20, height: 20, borderRadius: 999, background: '#fff', display: 'block' },
-        days: [1, 2, 3, 4, 5, 6, 0].map(dw => {
-          const on = s.days.includes(dw);
-          return { label: DOW[dw].charAt(0), toggle: () => this.mutate(dd => { const x = dd.subjects.find(y => y.id === s.id); if (!x) return; x.days = on ? x.days.filter(z => z !== dw) : x.days.concat([dw]); }),
-            style: { flex: 1, cursor: 'pointer', border: '1.5px solid ' + (on ? 'transparent' : 'var(--color-neutral-400)'), background: on ? s.color : 'transparent', color: on ? '#fff' : 'var(--color-neutral-700)', borderRadius: 999, padding: '6px 0', fontSize: 11.5 } };
-        }),
+        minsLabel: s.mins + ' min a sitting',
+        less: () => this.mutate(dd => { const x = dd.subjects.find(y => y.id === s.id); if (x) x.mins = Math.max(5, x.mins - 5); }),
+        more: () => this.mutate(dd => { const x = dd.subjects.find(y => y.id === s.id); if (x) x.mins = Math.min(120, x.mins + 5); }),
       })),
       subjDraft: draft('sj'), setSubjDraft: setDraft('sj'),
       addSubject: () => { const v = draft('sj').trim(); if (!v) return; const id = 's' + uid();
@@ -965,10 +1455,22 @@ class Component extends DCLogic {
         const sid = st.curPick || (S[0] && S[0].id);
         const items = draft('cp').split('\n').map(x => x.trim()).filter(Boolean);
         if (!items.length || !sid) return;
-        this.mutate(dd => { dd.cur[sid] = { name: draft('cn').trim() || 'Imported', pos: 0, items }; Object.keys(dd.log).forEach(k => { if (k >= tKey) delete dd.log[k]; }); },
+        this.mutate(dd => { dd.cur[sid] = { name: draft('cn').trim() || 'Imported', pos: 0, items }; },
           () => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { cp: '', cn: '', curDone: items.length + ' lessons loaded' }) }), () => this.ensure(tKey)));
       },
-      storageNote: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net.',
+      remindNote: 'The app nudges you on the Today screen in the last five days of the month, and keeps nudging until you mark the month complete. For an actual buzz on your phone, open the iPhone Reminders app once: new reminder “Root & Rise — report + backup”, date the 28th, Repeat → Monthly.',
+      storageNote: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net, and Import loads one back (or loads a lesson list someone sent you).',
+      importPaste: draft('ip'), setImportPaste: setDraft('ip'),
+      importStatus: st.drafts.imp || '',
+      importPasted: () => { const v = draft('ip').trim(); if (!v) return; this.applyImport(v); clearDraft('ip'); },
+      importFile: (ev) => {
+        const f = ev.target.files && ev.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => this.applyImport(String(r.result));
+        r.readAsText(f);
+        ev.target.value = '';
+      },
       exportData: () => {
         const blob = new Blob([JSON.stringify({ data: d, photos: st.photos }, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
@@ -978,7 +1480,7 @@ class Component extends DCLogic {
       resetLabel: st.resetArmed ? 'Tap again to erase everything' : 'Start fresh',
       resetData: () => {
         if (!st.resetArmed) { this.setState({ resetArmed: true }); setTimeout(() => this.setState({ resetArmed: false }), 4000); return; }
-        const fresh = seed(); this.save(fresh); this.savePhotos([]);
+        const fresh = seed(tKey); this.save(fresh); this.savePhotos([]);
         this.setState({ d: fresh, resetArmed: false, screen: 'today', stack: [] }, () => this.ensure(tKey));
       },
       moreItems: [
@@ -987,8 +1489,8 @@ class Component extends DCLogic {
         ['checkin', d.student.name + "'s check-in", QS.some((q, i) => answers[i]) ? 'done this month' : 'not done this month', '#8c491a'],
       ].map(([s, n, sb, c]) => ({ name: n, sub: sb, dot: dot(c, 11), go: () => this.setState(x => ({ screen: s, stack: x.stack.concat([x.screen]) })) })),
 
-      tabs: [['today', 'Today'], ['week', 'Week'], ['books', 'Books'], ['report', 'Report'], ['setup', 'Setup']].map(([k, label]) => {
-        const on = st.screen === k || (k === 'setup' && !tabRoots.includes(st.screen));
+      tabs: [['today', 'Today'], ['week', 'Plan'], ['progress', 'Progress'], ['books', 'Books'], ['report', 'Report']].map(([k, label]) => {
+        const on = st.screen === k;
         return { label, pick: () => { this.flushTime(); if (k === 'today') this.ensure(tKey); this.setState({ screen: k, stack: [] }); },
           style: { flex: 1, cursor: 'pointer', border: 'none', background: 'transparent', padding: '6px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, color: on ? 'var(--color-accent-700)' : 'var(--color-neutral-600)' },
           mark: { width: on ? 22 : 9, height: 9, borderRadius: 999, background: on ? 'var(--color-accent)' : 'var(--color-neutral-500)', display: 'block' } };
