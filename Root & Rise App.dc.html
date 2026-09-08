@@ -27,8 +27,8 @@ a:hover{color:var(--color-accent-600)}
 </style>
 </helmet>
 
-<div style="min-height:100vh;display:flex;justify-content:center;background:var(--color-neutral-200)">
-<div style="width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;background:var(--color-bg);position:relative">
+<div style="height:100dvh;min-height:100vh;display:flex;justify-content:center;background:var(--color-neutral-200);overflow:hidden">
+<div style="width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;background:var(--color-bg);position:relative;overflow:hidden">
 
 <div style="flex:none;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;display:flex;align-items:center;gap:10px;background:var(--color-bg)">
 <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
@@ -41,7 +41,7 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ goSetup }}" style="width:36px;height:36px;flex:none;border:none;cursor:pointer;border-radius:999px;background:var(--color-accent-2);color:#fff;font-family:var(--font-heading);font-size:15px" style-hover="background:var(--color-accent-2-600)">{{ initial }}</button>
 </div>
 
-<div class="rr-scroll" style="flex:1;overflow-y:auto;padding:4px 18px 22px;-webkit-overflow-scrolling:touch">
+<div class="rr-scroll" style="flex:1 1 0;min-height:0;overflow-y:auto;padding:4px 18px 22px;-webkit-overflow-scrolling:touch">
 
 <sc-if value="{{ showInstall }}" hint-placeholder-val="{{ false }}">
 <div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:14px 15px;margin-bottom:16px">
@@ -563,6 +563,26 @@ a:hover{color:var(--color-accent-600)}
 <span style="font-size:11.5px;color:var(--color-neutral-700)">{{ t.pace }}</span>
 </div>
 <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:5px">{{ t.eta }}</div>
+<sc-if value="{{ t.canPick }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:7px;margin-top:12px;background:var(--color-bg);border-radius:999px;padding:5px 6px">
+<button onClick="{{ t.back }}" class="btn btn-secondary" style="width:28px;height:28px;padding:0;border-radius:999px">–</button>
+<button onClick="{{ t.openPick }}" style="flex:1;min-width:0;border:none;background:transparent;cursor:pointer;text-align:center;font-size:12.5px;color:var(--color-text);padding:5px 2px">Up next: {{ t.nextLabel }}</button>
+<button onClick="{{ t.fwd }}" class="btn btn-secondary" style="width:28px;height:28px;padding:0;border-radius:999px">+</button>
+</div>
+<sc-if value="{{ t.picking }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:9px">
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Which one are we on?</div>
+<div class="rr-scroll" style="max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ t.items }}" as="i" hint-placeholder-count="0">
+<button onClick="{{ i.pick }}" style="{{ i.style }}" style-hover="opacity:.85">
+<span style="{{ i.numStyle }}">{{ i.num }}</span>
+<span style="flex:1">{{ i.label }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</sc-if>
 </div>
 </sc-for>
 <div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5">Pace is measured over the last four weeks of logged lessons.</div>
@@ -751,7 +771,7 @@ class Component extends DCLogic {
   state = {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
     secs: 0, running: false, timerKey: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
-    bookTab: 'now', albumTab: 'photos', curPick: null, drafts: {}, copied: false, resetArmed: false,
+    bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, drafts: {}, copied: false, resetArmed: false,
     tocUrl: null, ocr: '',
   };
 
@@ -1016,7 +1036,9 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.d) return { title: 'Root & Rise', subtitle: 'loading…', initial: 'R', isToday: true, todayLessons: [], todayActs: [], noActs: true, tabs: [],
-      weekHours: '—', monthLessons: '—', booksDone: '—', todayProgress: '', aheadLabel: '', aheadSummary: '', todayEmpty: false, todayEmptyLine: '', showInstall: false, showBack: false };
+      weekHours: '—', monthLessons: '—', booksDone: '—', todayProgress: '', aheadLabel: '', aheadSummary: '', todayEmpty: false, todayEmptyLine: '',
+      showInstall: false, showBack: false, showNudge: false, addChips: [], cadence: [],
+      tomLabel: '', tomItems: [], tomEmpty: false, tomDraft: '' };
     const d = st.d, S = d.subjects;
     const sub = (id) => S.find(s => s.id === id) || { name: '—', color: 'var(--color-neutral-500)', mins: 0 };
     const dot = (c, sz) => ({ width: sz || 10, height: sz || 10, borderRadius: 999, background: c, flex: 'none', display: 'inline-block' });
@@ -1220,6 +1242,20 @@ class Component extends DCLogic {
           : finish ? left + ' left · on this pace, done around ' + MON[finish.getMonth()] + ' ' + finish.getFullYear()
             : left + ' lessons left · a few more weeks of history and I can estimate a finish date',
         fill: { width: pct + '%', height: '100%', borderRadius: 999, background: s.color },
+        // set where we actually are, by hand
+        nextLabel: total ? (c.items[pos] || 'finished') : 'nothing loaded',
+        canPick: total > 0,
+        picking: st.setPos === s.id,
+        openPick: () => this.setState(x => ({ setPos: x.setPos === s.id ? null : s.id })),
+        back: () => this.mutate(dd => { const x = dd.cur[s.id]; if (x) x.pos = Math.max(0, x.pos - 1); }),
+        fwd: () => this.mutate(dd => { const x = dd.cur[s.id]; if (x) x.pos = Math.min(x.items.length, x.pos + 1); }),
+        items: st.setPos === s.id ? c.items.map((it, ix) => ({
+          label: it, num: (ix + 1) + '.',
+          pick: () => this.mutate(dd => { const x = dd.cur[s.id]; if (x) x.pos = ix; }, () => this.setState({ setPos: null })),
+          style: { width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 'var(--radius-md)', padding: '9px 12px', display: 'flex', gap: 9, alignItems: 'baseline',
+            fontSize: 13, background: ix === pos ? s.color : 'var(--color-bg)', color: ix === pos ? '#fff' : 'var(--color-text)' },
+          numStyle: { fontSize: 10.5, opacity: 0.6, minWidth: 24, flex: 'none' },
+        })) : [],
       };
     });
     const allTotal = S.reduce((n, s) => n + ((d.cur[s.id] || { items: [] }).items.length), 0);
