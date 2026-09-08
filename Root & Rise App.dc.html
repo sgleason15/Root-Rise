@@ -106,6 +106,16 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ l.resetTimer }}" style="border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-neutral-700)">reset</button>
 </div>
 <div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Lesson</div>
+<div style="display:flex;gap:6px;align-items:center">
+<input class="input" placeholder="{{ l.ref }}" value="{{ l.customVal }}" onChange="{{ l.setCustom }}" style="border-radius:999px;flex:1;font-size:13px;background:var(--color-bg)">
+<sc-if value="{{ l.isCustom }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ l.clearCustom }}" style="border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-neutral-700);flex:none">use plan</button>
+</sc-if>
+</div>
+<div style="font-size:11px;color:var(--color-neutral-700);margin-top:5px">Leave it blank to use the lesson plan's next one. Typing your own keeps the plan where it is.</div>
+</div>
+<div>
 <div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Before · the plan</div>
 <textarea class="input" placeholder="What we'll do…" value="{{ l.before }}" onChange="{{ l.setBefore }}" style="border-radius:var(--radius-md);min-height:56px;padding:11px 13px;font-size:13px;line-height:1.5;background:var(--color-bg)"></textarea>
 </div>
@@ -589,7 +599,7 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ goSetup }}" style="width:100%;border:none;cursor:pointer;background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px;text-align:left" style-hover="background:var(--color-neutral-300)">
 <span style="flex:1">
 <span style="display:block;font-size:14.5px;color:var(--color-text)">Subjects, curriculum &amp; backup</span>
-<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:1px">paste a table of contents, add a subject, export</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:1px">load a lesson plan, add a subject, export</span>
 </span>
 <span style="font-size:18px;color:var(--color-neutral-600)">›</span>
 </button>
@@ -634,10 +644,10 @@ a:hover{color:var(--color-accent-600)}
 </div>
 
 <div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px">
-<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Load a curriculum</div>
-<div style="font-size:12.5px;color:var(--color-accent-900);margin:4px 0 11px;line-height:1.5">Photograph the table of contents or paste it in — one lesson per line. They queue up in order, and each subject hands you the next one as you build days.</div>
+<div style="font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Load a lesson plan</div>
+<div style="font-size:12.5px;color:var(--color-accent-900);margin:4px 0 11px;line-height:1.5">Photograph the lesson plan or paste it in — one lesson per line. They queue up in order, and each subject hands you the next one as you build days.</div>
 <label style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1.5px dashed var(--color-accent-600);border-radius:var(--radius-md);padding:12px;font-family:var(--font-heading);font-size:13.5px;color:var(--color-accent-800);margin-bottom:9px" style-hover="background:var(--color-accent-300)">
-Photograph the contents page
+Photograph the lesson plan
 <input type="file" accept="image/*" onChange="{{ tocPhoto }}" style="display:none">
 </label>
 <sc-if value="{{ hasToc }}" hint-placeholder-val="{{ false }}">
@@ -657,8 +667,14 @@ Photograph the contents page
 <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}</button>
 </sc-for>
 </div>
-<input class="input" placeholder="Curriculum name" value="{{ curName }}" onChange="{{ setCurName }}" style="border-radius:999px;margin-bottom:7px">
-<textarea class="input" placeholder="Lesson 1 — Counting to 10&#10;Lesson 2 — Number bonds&#10;Lesson 3 — …" value="{{ curPaste }}" onChange="{{ setCurPaste }}" style="border-radius:var(--radius-lg);min-height:110px;padding:12px 14px;font-size:13px;line-height:1.5"></textarea>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-800);margin-bottom:7px">Ready-made · loads into {{ curSubjectName }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+<sc-for list="{{ presets }}" as="p" hint-placeholder-count="2">
+<button onClick="{{ p.load }}" style="{{ p.style }}" style-hover="background:var(--color-accent-300)">{{ p.label }}</button>
+</sc-for>
+</div>
+<input class="input" placeholder="Lesson plan name — e.g. Math With Confidence" value="{{ curName }}" onChange="{{ setCurName }}" style="border-radius:999px;margin-bottom:7px">
+<textarea class="input" placeholder="1.1&#10;1.2&#10;1.3&#10;1.4&#10;2.1 …" value="{{ curPaste }}" onChange="{{ setCurPaste }}" style="border-radius:var(--radius-lg);min-height:110px;padding:12px 14px;font-size:13px;line-height:1.5"></textarea>
 <div style="display:flex;gap:7px;margin-top:9px;align-items:center">
 <button onClick="{{ importCur }}" class="btn btn-primary" style="border-radius:999px">Load into {{ curSubjectName }}</button>
 <span style="font-size:11.5px;color:var(--color-accent-900)">{{ curStatus }}</span>
@@ -749,8 +765,8 @@ const monKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(
 function seed(todayKey) {
   const S = [
     ['bible', 'Bible Study', '#3d472b', 15, 'Genesis — creation to Joseph', 'Lesson ', 12, 60],
-    ['math', 'Math', '#c67139', 20, 'Math-U-See Primer', 'Lesson ', 24, 120],
-    ['reading', 'Reading', '#7a8a5e', 20, 'Bob Books, Sets 2–3', 'Book ', 5, 30],
+    ['math', 'Math', '#c67139', 20, 'Math With Confidence', 'Lesson ', 1, 0],
+    ['reading', 'Reading', '#7a8a5e', 20, 'Reading — 100 lessons', 'Lesson ', 1, 100],
     ['writing', 'Writing', '#8c491a', 15, 'Handwriting practice', 'Week ', 6, 30],
     ['french', 'French', '#645c50', 10, 'French for little ones', 'Leçon ', 9, 40],
   ];
@@ -759,6 +775,9 @@ function seed(todayKey) {
     subjects.push({ id, name, color, mins, active: true });
     cur[id] = { name: cname, pos: 0, items: Array.from({ length: count }, (_, i) => prefix + (from + i)) };
   });
+  // Math With Confidence: 32 units of four lessons each
+  cur.math.items = [];
+  for (let u = 1; u <= 32; u++) for (let l = 1; l <= 4; l++) cur.math.items.push(u + '.' + l);
   const log = {};
   if (todayKey) log[todayKey] = ['bible', 'math', 'reading', 'writing'].map(sid => ({ sid, status: 'todo', secs: 0, before: '', after: '', tags: [] }));
   return { v: 1, student: { name: 'Liam', grade: 'Kindergarten', level: 2 }, subjects, cur, log, acts: [], mats: [], books: [
@@ -813,6 +832,7 @@ class Component extends DCLogic {
     const c = d.cur[sid];
     if (!c || !c.items.length) return 'No lessons loaded';
     const e = (d.log[dateKey] || [])[idx];
+    if (e && e.custom) return e.custom; // typed by hand — detached from the queue
     // a ref is history only once the lesson is finished or skipped; anything
     // still pending re-resolves (so entries planned under the old model heal)
     if (e && e.ref && (e.status === 'done' || e.status === 'skipped')) return e.ref;
@@ -825,7 +845,7 @@ class Component extends DCLogic {
         if (k === dateKey && i === idx) return c.items[c.pos + rank] || 'Curriculum finished';
         const x = arr[i];
         // only pending entries from today onwards push the queue along
-        if (x.sid === sid && (x.status === 'todo' || x.status === 'partial') && k >= tKey) rank++;
+        if (x.sid === sid && !x.custom && (x.status === 'todo' || x.status === 'partial') && k >= tKey) rank++;
       }
     }
     return c.items[c.pos + rank] || 'Curriculum finished';
@@ -901,7 +921,7 @@ class Component extends DCLogic {
       if (add) e.secs = (e.secs || 0) + add;
       const was = e.status;
       e.status = target;
-      const c = dd.cur[e.sid];
+      const c = e.custom ? null : dd.cur[e.sid]; // a hand-typed lesson never moves the queue
       if (target === 'todo' || target === 'partial') delete e.ref; else e.ref = e.ref || shownRef;
       if (c && target === 'done' && was !== 'done') c.pos = Math.min(c.pos + 1, c.items.length);
       if (c && was === 'done' && target !== 'done' && c.pos > 0) c.pos -= 1;
@@ -1121,6 +1141,9 @@ class Component extends DCLogic {
           background: running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: running ? '#fff' : 'var(--color-bg)' },
         toggleTimer: () => this.toggleTimerAt(dk, i),
         resetTimer: () => { if (st.timerKey === tk) { clearInterval(this._t); this.setState({ secs: 0, running: false }); } this.patchAt(dk, i, x => { x.secs = 0; }); },
+        customVal: e.custom || '', isCustom: !!e.custom,
+        setCustom: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { if (v.trim()) x.custom = v; else delete x.custom; }); },
+        clearCustom: () => this.patchAt(dk, i, x => { delete x.custom; }),
         before: e.before || '', setBefore: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { x.before = v; }); },
         after: e.after || '', setAfter: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { x.after = v; }); },
         tags: TAGS.map(label => {
@@ -1238,7 +1261,7 @@ class Component extends DCLogic {
         pct: total ? pct + '%' : '—',
         count: total ? pos + ' / ' + total + ' lessons' : 'no lessons loaded',
         pace: enough ? perWeek.toFixed(1) + ' a week' : recent ? recent + ' in 4 weeks' : 'no pace yet',
-        eta: !total ? 'Paste its contents in Setup.' : left === 0 ? 'Finished — well done.'
+        eta: !total ? 'Load its lesson plan in Setup.' : left === 0 ? 'Finished — well done.'
           : finish ? left + ' left · on this pace, done around ' + MON[finish.getMonth()] + ' ' + finish.getFullYear()
             : left + ' lessons left · a few more weeks of history and I can estimate a finish date',
         fill: { width: pct + '%', height: '100%', borderRadius: 999, background: s.color },
@@ -1484,7 +1507,22 @@ class Component extends DCLogic {
       curSubjects: S.map(s => ({ name: s.name, pick: () => this.setState({ curPick: s.id }),
         style: { cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12, border: '1.5px solid ' + ((st.curPick || S[0].id) === s.id ? 'transparent' : 'var(--color-accent-600)'), background: (st.curPick || S[0].id) === s.id ? 'var(--color-accent)' : 'transparent', color: (st.curPick || S[0].id) === s.id ? 'var(--color-bg)' : 'var(--color-accent-800)' } })),
       curSubjectName: sub(st.curPick || (S[0] && S[0].id)).name,
-      curName: draft('cn'), setCurName: setDraft('cn'),
+      presets: [
+        { label: 'Math With Confidence · 128', name: 'Math With Confidence',
+          items: (() => { const a = []; for (let u = 1; u <= 32; u++) for (let l = 1; l <= 4; l++) a.push(u + '.' + l); return a; })() },
+        { label: 'Reading · 100 lessons', name: 'Reading — 100 lessons',
+          items: Array.from({ length: 100 }, (_, i) => 'Lesson ' + (i + 1)) },
+      ].map(p => ({
+        label: p.label,
+        style: { cursor: 'pointer', borderRadius: 999, padding: '8px 13px', fontSize: 12, border: '1.5px solid var(--color-accent-600)', background: 'transparent', color: 'var(--color-accent-800)' },
+        load: () => {
+          const sid = st.curPick || (S[0] && S[0].id);
+          if (!sid) return;
+          this.mutate(dd => { dd.cur[sid] = { name: p.name, pos: 0, items: p.items.slice() }; },
+            () => this.setState(x => ({ drafts: Object.assign({}, x.drafts, { curDone: p.items.length + ' lessons loaded into ' + sub(sid).name }) })));
+        },
+      })),
+      curName: draft('cn') || '', setCurName: setDraft('cn'),
       curPaste: draft('cp'), setCurPaste: setDraft('cp'),
       curStatus: st.drafts.curDone || '',
       importCur: () => {
