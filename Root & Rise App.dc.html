@@ -238,6 +238,14 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </div>
 
+<button onClick="{{ goIdeas }}" style="width:100%;text-align:left;cursor:pointer;border:1.5px dashed var(--color-accent-300);background:transparent;border-radius:var(--radius-lg);padding:13px 15px;display:flex;align-items:center;gap:10px" style-hover="background:var(--color-accent-100)">
+<span style="flex:1">
+<span style="display:block;font-size:13px;color:var(--color-text)">Something he asked about today?</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:2px">{{ ideaCta }}</span>
+</span>
+<span style="font-size:17px;color:var(--color-accent-700)">›</span>
+</button>
+
 <button onClick="{{ goAhead }}" style="width:100%;text-align:left;cursor:pointer;border:none;background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;display:flex;align-items:center;gap:12px" style-hover="background:var(--color-neutral-300)">
 <span style="flex:1">
 <span style="display:block;font-family:var(--font-heading);font-size:16px;color:var(--color-accent-800)">Look ahead · {{ aheadLabel }}</span>
@@ -301,6 +309,32 @@ a:hover{color:var(--color-accent-600)}
 <div style="display:flex;gap:7px;margin-top:10px">
 <input class="input" placeholder="Add an activity — swim, co-op, library…" value="{{ actDraft }}" onChange="{{ setActDraft }}" style="border-radius:999px;flex:1">
 <button onClick="{{ addAct }}" class="btn btn-primary" style="border-radius:999px">Add</button>
+</div>
+
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin:16px 0 8px">What we'll need</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ selDayMats }}" as="m" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="{{ m.dot }}"></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:13.5px">{{ m.name }}</span>
+<span style="display:block;font-size:11px;color:var(--color-neutral-700)">{{ m.subject }}</span>
+</span>
+<button onClick="{{ m.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px">×</button>
+</div>
+</sc-for>
+<sc-if value="{{ noSelDayMats }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5">Nothing to gather yet. Anything you add here turns up in Look ahead.</div>
+</sc-if>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+<sc-for list="{{ matPicks }}" as="p" hint-placeholder-count="4">
+<button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:7px;margin-top:8px">
+<input class="input" placeholder="Cotton balls, vinegar, a jar…" value="{{ matDraft }}" onChange="{{ setMatDraft }}" style="border-radius:999px;flex:1">
+<button onClick="{{ addMat }}" class="btn btn-primary" style="border-radius:999px">Add</button>
 </div>
 </div>
 <div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5">Nothing is assigned to weekdays any more — you build each day, and every subject hands you its next lesson automatically. Mark one done and the queue moves on.</div>
@@ -377,11 +411,14 @@ a:hover{color:var(--color-accent-600)}
 </div>
 <div style="display:flex;flex-direction:column;gap:6px">
 <sc-for list="{{ d.mats }}" as="m" hint-placeholder-count="2">
-<button onClick="{{ m.toggle }}" style="width:100%;cursor:pointer;border:none;background:var(--color-surface);border-radius:var(--radius-md);padding:11px 13px;display:flex;align-items:center;gap:10px" style-hover="background:var(--color-neutral-300)">
+<div style="display:flex;align-items:center;gap:4px;background:var(--color-surface);border-radius:var(--radius-md)">
+<button onClick="{{ m.toggle }}" style="flex:1;min-width:0;cursor:pointer;border:none;background:transparent;border-radius:var(--radius-md);padding:11px 4px 11px 13px;display:flex;align-items:center;gap:10px" style-hover="background:var(--color-neutral-300)">
 <span style="{{ m.box }}">{{ m.mark }}</span>
 <span style="flex:1;text-align:left;font-size:13.5px">{{ m.name }}</span>
 <span style="{{ m.chip }}">{{ m.src }}</span>
 </button>
+<button onClick="{{ m.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 11px 0 4px;align-self:stretch">×</button>
+</div>
 </sc-for>
 <sc-if value="{{ d.noMats }}" hint-placeholder-val="{{ false }}">
 <div style="font-size:12px;color:var(--color-neutral-700)">Nothing extra to gather.</div>
@@ -395,7 +432,7 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </sc-for>
 <sc-if value="{{ aheadUnplanned }}" hint-placeholder-val="{{ false }}">
-<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">Next week isn't built yet. Go to the Week tab, pick a day, and tap the subjects you want — each one hands you its next lesson.</div>
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:16px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">Nothing planned between now and the end of next week. Go to the Week tab, pick a day, tap the subjects you want, and add anything you'll need to have out.</div>
 </sc-if>
 </div>
 </sc-if>
@@ -504,6 +541,29 @@ a:hover{color:var(--color-accent-600)}
 <textarea class="input" placeholder="What was hard, and what we tried…" value="{{ rDifficulties }}" onChange="{{ setDifficulties }}" style="border-radius:var(--radius-lg);min-height:80px;padding:13px 15px;font-size:13.5px;line-height:1.5"></textarea>
 </div>
 
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">Following his interests</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ rIdeasCovered }}" as="n" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:9px;font-size:13px">
+<span style="{{ n.dot }}"></span>
+<span style="flex:1">{{ n.text }}</span>
+<span style="font-size:11px;color:var(--color-neutral-700);flex:none">{{ n.subject }}</span>
+</div>
+</sc-for>
+<sc-for list="{{ rIdeasNoticed }}" as="n" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--color-neutral-800)">
+<span style="{{ n.dot }}"></span>
+<span style="flex:1">{{ n.text }}</span>
+<span style="font-size:11px;color:var(--color-neutral-700);flex:none">{{ n.subject }}</span>
+</div>
+</sc-for>
+<sc-if value="{{ rIdeasEmpty }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.5">Nothing noted this month. <a href="#" onClick="{{ goIdeas }}">Keep an idea</a> when he asks about something.</div>
+</sc-if>
+</div>
+</div>
+
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
 <div style="font-family:var(--font-heading);font-size:15px;margin-bottom:8px">{{ rNotesTitle }}</div>
 <div style="display:flex;flex-direction:column;gap:9px">
@@ -525,6 +585,80 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ printReport }}" class="btn btn-secondary" style="flex:1;border-radius:999px;padding:13px">Print / PDF</button>
 </div>
 <button onClick="{{ toggleClosed }}" style="{{ closeBtn }}" style-hover="opacity:.9">{{ closeLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isIdeas }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;display:flex;flex-direction:column;gap:11px">
+<div>
+<div style="font-family:var(--font-heading);font-size:16px">Something he asked about?</div>
+<div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5;margin-top:3px">Catch it here while it's fresh. Tag when it belongs and it'll come back round then.</div>
+</div>
+<input class="input" placeholder="Why do blue and red make purple?" value="{{ ideaDraft }}" onChange="{{ setIdeaDraft }}" style="border-radius:999px;font-size:13.5px">
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">When</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
+<sc-for list="{{ ideaWhenPicks }}" as="w" hint-placeholder-count="6">
+<button onClick="{{ w.pick }}" style="{{ w.style }}">{{ w.label }}</button>
+</sc-for>
+</div>
+</div>
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Subject, if it's obvious</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
+<sc-for list="{{ ideaSubjPicks }}" as="p" hint-placeholder-count="4">
+<button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+</sc-for>
+</div>
+</div>
+<button onClick="{{ addIdea }}" class="btn btn-primary" style="border-radius:999px;padding:12px">Keep this idea</button>
+</div>
+
+<sc-if value="{{ ideasEmpty }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:15px 16px;font-size:13px;line-height:1.55;color:var(--color-accent-2-900)">Nothing kept yet. This is the place for the things he brings you — a question at breakfast, a book he won't put down, winter animals in December. They turn up in the monthly report too, as evidence you followed his interests.</div>
+</sc-if>
+
+<sc-for list="{{ ideaGroups }}" as="g" hint-placeholder-count="2">
+<div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+<div style="font-family:var(--font-heading);font-size:16px">{{ g.label }}</div>
+<div style="font-size:11px;color:var(--color-neutral-700)">{{ g.note }}</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:7px">
+<sc-for list="{{ g.items }}" as="n" hint-placeholder-count="2">
+<div style="background:var(--color-surface);border-radius:var(--radius-md);padding:11px 12px;display:flex;align-items:flex-start;gap:10px">
+<button onClick="{{ n.toggle }}" style="{{ n.box }}">{{ n.mark }}</button>
+<span style="flex:1;min-width:0">
+<span style="{{ n.textStyle }}">{{ n.text }}</span>
+<span style="display:flex;align-items:center;gap:7px;margin-top:5px">
+<span style="{{ n.chip }}">{{ n.whenLabel }}</span>
+<span style="font-size:11px;color:var(--color-neutral-700)">{{ n.meta }}</span>
+</span>
+</span>
+<button onClick="{{ n.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px;flex:none">×</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+
+<sc-if value="{{ hasIdeaDone }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Followed up</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ ideaDone }}" as="n" hint-placeholder-count="1">
+<div style="display:flex;align-items:flex-start;gap:10px;padding:2px 0">
+<button onClick="{{ n.toggle }}" style="{{ n.box }}">{{ n.mark }}</button>
+<span style="{{ n.textStyle }}">{{ n.text }}</span>
+<button onClick="{{ n.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 2px;flex:none">×</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
 </div>
 </sc-if>
 
@@ -844,6 +978,11 @@ const QS = [
 ];
 const LEVELS = ['Pre-reader', 'GR A', 'GR B', 'GR C', 'GR D', 'GR E', 'GR F', 'GR G', 'GR H', 'GR I', 'GR J'];
 const TAGS = ['clicked', 'needs review', 'struggled', 'loved it'];
+const WHENS = [['anytime', 'Anytime'], ['soon', 'Soon'], ['fall', 'Fall'], ['winter', 'Winter'], ['spring', 'Spring'], ['summer', 'Summer']];
+const SEASONS = ['fall', 'winter', 'spring', 'summer'];
+const seasonOf = (m) => (m === 11 || m < 2) ? 'winter' : m < 5 ? 'spring' : m < 8 ? 'summer' : 'fall';
+const seasonLabel = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const whenLabel = (w) => (WHENS.find(x => x[0] === w) || WHENS[0])[1];
 const stLabels = { done: 'Done', partial: 'Partial', skipped: 'Skipped', todo: 'Not yet' };
 const stColors = {
   done: ['var(--color-accent-2-300)', 'var(--color-accent-2-900)'],
@@ -965,7 +1104,8 @@ class Component extends DCLogic {
   state = {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
     secs: 0, running: false, timerKey: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
-    bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false,
+    bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
+    ideaWhen: 'anytime', ideaSid: '',
     tocUrl: null, ocr: '',
   };
 
@@ -1306,6 +1446,18 @@ class Component extends DCLogic {
     say(done.length ? 'Loaded: ' + done.join(', ') + '.' : 'Nothing recognised in that file.');
   }
 
+  // Ideas: a question he asked, a thing he wants to learn, a unit to build.
+  // Dated when you noticed it, tagged with when it belongs.
+  ideas() { return (this.state.d || {}).ideas || []; }
+  addIdea(text, when, sid) {
+    const v = String(text || '').trim();
+    if (!v) return;
+    this.mutate(dd => {
+      if (!dd.ideas) dd.ideas = [];
+      dd.ideas.unshift({ id: uid(), date: key(new Date()), text: v, when: when || 'anytime', sid: sid || '', done: false, doneDate: '' });
+    });
+  }
+  patchIdea(id, fn) { this.mutate(dd => { const x = (dd.ideas || []).find(y => y.id === id); if (x) fn(x); }); }
   reportText(mk) {
     const d = this.state.d, st = this.monthStats(mk), m = d.months[mk] || {};
     const dt = parse(mk + '-01');
@@ -1317,7 +1469,18 @@ class Component extends DCLogic {
       'Hours by subject:',
     ];
     d.subjects.forEach(s => { if (st.per[s.id]) lines.push('  ' + s.name + ': ' + (st.per[s.id] / 3600).toFixed(1) + ' h'); });
-    lines.push('', 'Successes: ' + (m.successes || '—'), '', 'Difficulties: ' + (m.difficulties || '—'), '', "Student check-in:");
+    lines.push('', 'Successes: ' + (m.successes || '—'), '', 'Difficulties: ' + (m.difficulties || '—'));
+    const covered = (d.ideas || []).filter(n => n.done && (n.doneDate || n.date).slice(0, 7) === mk);
+    if (covered.length) {
+      lines.push('', 'Interests followed up this month:');
+      covered.forEach(n => lines.push('  ' + n.text + (n.sid ? ' (' + ((d.subjects.find(s => s.id === n.sid) || {}).name || '') + ')' : '')));
+    }
+    const noticed = (d.ideas || []).filter(n => !n.done && n.date.slice(0, 7) === mk);
+    if (noticed.length) {
+      lines.push('', 'Questions and interests he raised this month, to build on:');
+      noticed.forEach(n => lines.push('  ' + n.text));
+    }
+    lines.push('', "Student check-in:");
     QS.forEach((q, i) => { const a = m.answers && m.answers[i]; if (a) lines.push('  Q: ' + q, '  A: ' + a); });
     return lines.join('\n');
   }
@@ -1346,10 +1509,11 @@ class Component extends DCLogic {
       week: ['Build a day', 'pick a day, check off subjects'],
       progress: ['Curriculum progress', 'where we are in everything'],
       lesson: ['Lesson', st.lessonDate === tKey ? 'today' : (st.lessonDate || '')],
-      ahead: ['Look ahead', 'materials for next week'],
+      ahead: ['Look ahead', 'everything we need to gather'],
       books: ['Books', d.student.name + "'s reading"],
       report: ['Monthly report', 'for our own records'],
       outcomes: ['Alberta outcomes', 'progress, not mastery'],
+      ideas: ['Ideas', 'what he wants to learn next'],
       checkin: ['Check-in', 'once a month'],
       album: ['Album & portfolio', st.photos.length + ' items'],
       setup: ['Setup', 'subjects, curriculum, backup'],
@@ -1371,7 +1535,7 @@ class Component extends DCLogic {
       .concat(d.acts.filter(a => a.date === tomKey).map(a => ({ name: a.name, kind: 'activity',
         dot: { width: 8, height: 8, borderRadius: 999, flex: 'none', display: 'inline-block', border: '1.5px dashed var(--color-accent-2)' },
         removable: true, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })))
-      .concat(d.mats.filter(m => m.date === tomKey).map(m => ({ name: m.name + (m.have ? ' — ready' : ' — to gather'), kind: 'material',
+      .concat(d.mats.filter(m => m.date === tomKey).map(m => ({ name: m.name + (m.sid ? ' · ' + sub(m.sid).name : '') + (m.have ? ' — ready' : ' — to gather'), kind: 'material',
         dot: dot(m.have ? 'var(--color-accent-2)' : 'var(--color-accent)', 8),
         removable: true, remove: () => this.mutate(dd => { dd.mats = dd.mats.filter(x => x.id !== m.id); }) })));
 
@@ -1496,13 +1660,16 @@ class Component extends DCLogic {
     const lRunning = st.running && st.timerKey === lTk;
     const totalSecs = (le.secs || 0) + (st.timerKey === lTk ? st.secs : 0);
 
-    // ── look ahead (next week)
-    const aheadStart = addDays(wkStartToday, 7);
-    const aheadDays = Array.from({ length: 7 }, (_, i) => addDays(aheadStart, i)).filter(dt => {
+    // ── look ahead: today through the end of next week, so anything you
+    // attached while building a day is visible while there's still time to buy it.
+    const aheadStart = today;
+    const aheadEnd = addDays(wkStartToday, 13);
+    const aheadSpan = Math.round((aheadEnd - today) / 86400000) + 1;
+    const aheadDays = Array.from({ length: Math.max(1, aheadSpan) }, (_, i) => addDays(today, i)).filter(dt => {
       const k = key(dt);
       return (d.log[k] || []).length || d.acts.some(a => a.date === k) || d.mats.some(m => m.date === k);
     });
-    const aheadMats = d.mats.filter(m => m.date >= key(aheadStart) && m.date <= key(addDays(aheadStart, 6)));
+    const aheadMats = d.mats.filter(m => m.date >= tKey && m.date <= key(aheadEnd));
     const aheadTodo = aheadMats.filter(m => !m.have).length;
 
     // ── books
@@ -1558,6 +1725,40 @@ class Component extends DCLogic {
     // ── report
     const mk = st.month || monKey(today), mdt = parse(mk + '-01');
     const rst = this.monthStats(mk), mrec = d.months[mk] || {};
+
+    // ── ideas, grouped so the season you're in floats to the top
+    const nowSeason = seasonOf(today.getMonth());
+    const allIdeas = this.ideas();
+    const doneIdeas = allIdeas.filter(n => n.done);
+    const openIdeas = allIdeas.filter(n => !n.done);
+    const mapIdea = (n) => {
+      const ndt = parse(n.date);
+      return {
+        text: n.text,
+        meta: (n.sid ? sub(n.sid).name + ' · ' : '') + 'noted ' + MON[ndt.getMonth()].slice(0, 3) + ' ' + ndt.getDate(),
+        box: box(n.done), mark: n.done ? '✓' : '',
+        chip: n.when === 'anytime'
+          ? chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)')
+          : chip('var(--color-accent-200)', 'var(--color-accent-900)'),
+        whenLabel: whenLabel(n.when),
+        textStyle: { flex: 1, minWidth: 0, textAlign: 'left', fontSize: 13.5, lineHeight: 1.4,
+          color: n.done ? 'var(--color-neutral-600)' : 'var(--color-text)', textDecoration: n.done ? 'line-through' : 'none' },
+        toggle: () => this.patchIdea(n.id, x => { x.done = !x.done; x.doneDate = x.done ? tKey : ''; }),
+        remove: () => this.mutate(dd => { dd.ideas = (dd.ideas || []).filter(y => y.id !== n.id); }),
+        bump: () => this.patchIdea(n.id, x => { x.when = x.when === 'soon' ? 'anytime' : 'soon'; }),
+        bumpLabel: n.when === 'soon' ? 'not soon' : 'soon',
+      };
+    };
+    const seasonOrder = SEASONS.slice(SEASONS.indexOf(nowSeason)).concat(SEASONS.slice(0, SEASONS.indexOf(nowSeason)));
+    const ideaGroups = [
+      { key: 'now', label: 'Right now', note: 'this season, and anything marked soon',
+        items: openIdeas.filter(n => n.when === nowSeason || n.when === 'soon') },
+    ].concat(seasonOrder.slice(1).map(s => ({
+      key: s, label: seasonLabel(s), note: 'when ' + s + ' comes round',
+      items: openIdeas.filter(n => n.when === s),
+    }))).concat([
+      { key: 'anytime', label: 'Anytime', note: 'no particular season', items: openIdeas.filter(n => n.when === 'anytime') },
+    ]).filter(g => g.items.length).map(g => ({ label: g.label, note: g.note, items: g.items.map(mapIdea) }));
     const maxSecs = Math.max.apply(null, [1].concat(S.map(s => rst.per[s.id] || 0)));
     const answers = mrec.answers || {};
 
@@ -1579,6 +1780,7 @@ class Component extends DCLogic {
       isToday: st.screen === 'today', isWeek: st.screen === 'week', isLesson: st.screen === 'lesson',
       isAhead: st.screen === 'ahead', isBooks: st.screen === 'books', isReport: st.screen === 'report',
       isCheckin: st.screen === 'checkin', isAlbum: st.screen === 'album', isSetup: st.screen === 'setup',
+      isIdeas: st.screen === 'ideas',
 
       weekHours: (weekSecs / 3600).toFixed(1), monthLessons: mstats.lessons, booksDone: d.books.filter(b => b.state === 'done').length,
       todayProgress: tEntries.length ? doneCount + ' of ' + tEntries.length + ' done' : '',
@@ -1595,9 +1797,11 @@ class Component extends DCLogic {
       todayActs: d.acts.filter(a => a.date === tKey).map(a => ({ name: a.name, remove: () => this.mutate(dd => { dd.acts = dd.acts.filter(x => x.id !== a.id); }) })),
       noActs: !d.acts.some(a => a.date === tKey),
       goAhead: () => this.setState(s => ({ screen: 'ahead', stack: s.stack.concat([s.screen]) })),
-      aheadLabel: 'week of ' + MON[aheadStart.getMonth()].slice(0, 3) + ' ' + aheadStart.getDate(),
-      aheadSummary: aheadMats.length ? aheadTodo + ' of ' + aheadMats.length + ' materials still to gather' : 'add what you need to gather',
-      aheadHeadline: aheadTodo ? aheadTodo + ' things to get before Monday' : 'Nothing left to gather',
+      aheadLabel: 'through ' + MON[aheadEnd.getMonth()].slice(0, 3) + ' ' + aheadEnd.getDate(),
+      aheadSummary: aheadMats.length
+        ? (aheadTodo ? aheadTodo + ' of ' + aheadMats.length + (aheadMats.length === 1 ? ' thing' : ' things') + ' still to gather' : 'everything is gathered')
+        : 'add what you need to gather',
+      aheadHeadline: aheadTodo ? aheadTodo + (aheadTodo === 1 ? ' thing' : ' things') + ' to gather' : 'Nothing left to gather',
       aheadUnplanned: !aheadDays.length,
       aheadDays: aheadDays.map(dt => {
         const k = key(dt), dk = 'mat-' + k;
@@ -1607,9 +1811,12 @@ class Component extends DCLogic {
           plan: (d.log[k] || []).map((e, i) => sub(e.sid).name).join(' · ') || 'activities only',
           mats: mats.map(m => ({
             name: m.name, box: box(m.have), mark: m.have ? '✓' : '',
-            chip: chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)'),
-            src: m.src === 'auto' ? 'curriculum' : 'added by you',
+            chip: m.sid
+              ? chip('transparent', sub(m.sid).color, '1px solid ' + sub(m.sid).color)
+              : chip('transparent', 'var(--color-neutral-700)', '1px solid var(--color-neutral-400)'),
+            src: m.sid ? sub(m.sid).name : (m.src === 'auto' ? 'curriculum' : 'added by you'),
             toggle: () => this.mutate(dd => { const x = dd.mats.find(y => y.id === m.id); if (x) x.have = !x.have; }),
+            remove: () => this.mutate(dd => { dd.mats = dd.mats.filter(y => y.id !== m.id); }),
           })),
           noMats: !mats.length,
           draft: draft(dk), setDraft: setDraft(dk),
@@ -1647,6 +1854,33 @@ class Component extends DCLogic {
       dayAddChips: addChipsFor(selK),
       actDraft: draft('act'), setActDraft: setDraft('act'),
       addAct: () => { const v = draft('act').trim(); if (!v) return; this.mutate(dd => { dd.acts.push({ id: uid(), date: selK, name: v }); }, () => clearDraft('act')); },
+
+      // What we'll need on this day, optionally pinned to one subject.
+      selDayMats: d.mats.filter(m => m.date === selK).map(m => ({
+        name: m.name,
+        subject: m.sid ? sub(m.sid).name : (m.src === 'auto' ? 'from the curriculum' : 'any time that day'),
+        dot: dot(m.sid ? sub(m.sid).color : 'var(--color-neutral-400)', 9),
+        remove: () => this.mutate(dd => { dd.mats = dd.mats.filter(x => x.id !== m.id); }),
+      })),
+      noSelDayMats: !d.mats.some(m => m.date === selK),
+      matDraft: draft('mat'), setMatDraft: setDraft('mat'),
+      matPicks: [{ id: '', name: 'Any' }].concat(S.filter(s => s.active).map(s => ({ id: s.id, name: s.name })))
+        .map(p => ({
+          label: p.name,
+          style: {
+            cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12,
+            border: '1.5px solid ' + (st.matSid === p.id ? 'var(--color-accent)' : 'var(--color-neutral-300)'),
+            background: st.matSid === p.id ? 'var(--color-accent-200)' : 'transparent',
+            color: st.matSid === p.id ? 'var(--color-accent-900)' : 'var(--color-neutral-800)',
+          },
+          pick: () => this.setState({ matSid: p.id }),
+        })),
+      addMat: () => {
+        const v = draft('mat').trim();
+        if (!v) return;
+        const sid = st.matSid || '';
+        this.mutate(dd => { dd.mats.push({ id: uid(), date: selK, name: v, have: false, src: 'you', sid: sid }); }, () => clearDraft('mat'));
+      },
 
       lesson: { subject: lsub.name, ref: lRef, before: le.before || '', after: le.after || '', dot: dot(lsub.color, 11) },
       clock: String(Math.floor(totalSecs / 60)).padStart(2, '0') + ':' + String(totalSecs % 60).padStart(2, '0'),
@@ -1718,6 +1952,52 @@ class Component extends DCLogic {
       rAnswers: QS.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a),
       rNoAnswers: !QS.some((q, i) => answers[i]),
       checkinCta: QS.some((q, i) => answers[i]) ? 'Edit the check-in' : 'Do the check-in',
+      // ── ideas: questions he asked, units to build, seasonal plans
+      ideaDraft: draft('idea'), setIdeaDraft: setDraft('idea'),
+      ideaWhenPicks: WHENS.map(([w, label]) => ({
+        label,
+        style: {
+          cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12,
+          border: '1.5px solid ' + (st.ideaWhen === w ? 'var(--color-accent)' : 'var(--color-neutral-300)'),
+          background: st.ideaWhen === w ? 'var(--color-accent-200)' : 'transparent',
+          color: st.ideaWhen === w ? 'var(--color-accent-900)' : 'var(--color-neutral-800)',
+        },
+        pick: () => this.setState({ ideaWhen: w }),
+      })),
+      ideaSubjPicks: [{ id: '', name: 'No subject yet' }].concat(S.filter(s => s.active).map(s => ({ id: s.id, name: s.name })))
+        .map(p => ({
+          label: p.name,
+          style: {
+            cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12,
+            border: '1.5px solid ' + (st.ideaSid === p.id ? 'var(--color-accent-2)' : 'var(--color-neutral-300)'),
+            background: st.ideaSid === p.id ? 'var(--color-accent-2-200)' : 'transparent',
+            color: st.ideaSid === p.id ? 'var(--color-accent-2-900)' : 'var(--color-neutral-800)',
+          },
+          pick: () => this.setState({ ideaSid: p.id }),
+        })),
+      addIdea: () => {
+        const v = draft('idea');
+        if (!v.trim()) return;
+        this.addIdea(v, st.ideaWhen, st.ideaSid);
+        clearDraft('idea');
+        this.setState({ ideaWhen: 'anytime', ideaSid: '' });
+      },
+      ideaGroups: ideaGroups,
+      ideasEmpty: !this.ideas().length,
+      ideaSeasonNote: 'It\'s ' + seasonLabel(nowSeason).toLowerCase() + ' — anything tagged ' + seasonLabel(nowSeason).toLowerCase() + ' or soon is at the top.',
+      ideaDoneCount: doneIdeas.length,
+      ideaDone: doneIdeas.map(mapIdea),
+      hasIdeaDone: !!doneIdeas.length,
+
+      // ── the month's ideas, shown read-only inside the report
+      rIdeasCovered: this.ideas().filter(n => n.done && (n.doneDate || n.date).slice(0, 7) === mk).map(n => ({
+        text: n.text, subject: n.sid ? sub(n.sid).name : 'no subject', dot: dot(n.sid ? sub(n.sid).color : 'var(--color-accent-2)', 8) })),
+      rIdeasNoticed: this.ideas().filter(n => !n.done && n.date.slice(0, 7) === mk).map(n => ({
+        text: n.text, subject: whenLabel(n.when), dot: dot('var(--color-neutral-400)', 8) })),
+      rIdeasEmpty: !this.ideas().some(n => (n.done ? (n.doneDate || n.date) : n.date).slice(0, 7) === mk),
+      goIdeas: () => this.setState(s => ({ screen: 'ideas', stack: s.stack.concat([s.screen]) })),
+      ideaCta: openIdeas.length ? 'Keep the idea · ' + openIdeas.length + ' waiting' : 'Keep the idea for later',
+
       goCheckin: () => this.setState(s => ({ screen: 'checkin', q: 0, stack: s.stack.concat([s.screen]) })),
       copyLabel: st.copied ? 'Copied ✓' : 'Copy summary',
       copyReport: () => { const txt = this.reportText(mk);
@@ -1890,7 +2170,8 @@ class Component extends DCLogic {
       moreItems: [
         ['album', 'Album & portfolio', st.photos.length + ' photos and samples', '#c67139'],
         ['outcomes', 'Alberta outcomes', 'for the Roots program plan', '#3d472b'],
-        ['ahead', 'Look ahead', 'materials for next week', '#7a8a5e'],
+        ['ideas', 'Ideas', openIdeas.length ? openIdeas.length + (openIdeas.length === 1 ? ' idea' : ' ideas') + ' waiting' : 'what he wants to learn next', '#8c491a'],
+        ['ahead', 'Look ahead', aheadTodo ? aheadTodo + (aheadTodo === 1 ? ' thing' : ' things') + ' to gather' : 'nothing left to gather', '#7a8a5e'],
         ['checkin', d.student.name + "'s check-in", QS.some((q, i) => answers[i]) ? 'done this month' : 'not done this month', '#8c491a'],
       ].map(([s, n, sb, c]) => ({ name: n, sub: sb, dot: dot(c, 11), go: () => this.setState(x => ({ screen: s, stack: x.stack.concat([x.screen]) })) })),
 
