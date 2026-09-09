@@ -24,10 +24,13 @@ input,textarea,button,select{font-family:var(--font-body)}
 a{color:var(--color-accent-700);text-decoration:none}
 a:hover{color:var(--color-accent-600)}
 .rr-scroll::-webkit-scrollbar{width:0;height:0}
+/* viewport-height fallback chain: the tab bar must never sit under the browser toolbar */
+.rr-shell{height:100%;height:100vh;height:100svh;height:100dvh}
+.rr-tabs{flex:0 0 auto;min-height:56px}
 </style>
 </helmet>
 
-<div style="height:100dvh;min-height:100vh;display:flex;justify-content:center;background:var(--color-neutral-200);overflow:hidden">
+<div class="rr-shell" style="max-height:100dvh;display:flex;justify-content:center;background:var(--color-neutral-200);overflow:hidden">
 <div style="width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;background:var(--color-bg);position:relative;overflow:hidden">
 
 <div style="flex:none;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;display:flex;align-items:center;gap:10px;background:var(--color-bg)">
@@ -100,10 +103,17 @@ a:hover{color:var(--color-accent-600)}
 </div>
 <sc-if value="{{ l.expanded }}" hint-placeholder-val="{{ false }}">
 <div style="padding:2px 14px 15px;display:flex;flex-direction:column;gap:13px">
-<div style="display:flex;align-items:center;gap:10px;background:var(--color-bg);border-radius:var(--radius-md);padding:10px 12px">
+<div style="background:var(--color-bg);border-radius:var(--radius-md);padding:10px 12px;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;align-items:center;gap:10px">
 <span style="font-family:var(--font-heading);font-size:26px;line-height:1;flex:1">{{ l.clock }}</span>
 <button onClick="{{ l.toggleTimer }}" style="{{ l.timerBtn }}" style-hover="opacity:.9">{{ l.timerLabel }}</button>
 <button onClick="{{ l.resetTimer }}" style="border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-neutral-700)">reset</button>
+</div>
+<div style="display:flex;align-items:center;gap:8px;border-top:1px solid var(--color-neutral-300);padding-top:9px">
+<span style="font-size:11.5px;color:var(--color-neutral-700);flex:1">Or just type the minutes</span>
+<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ l.minsVal }}" onChange="{{ l.setMins }}" class="input" style="border-radius:999px;width:72px;text-align:center;font-size:13.5px;padding:7px 8px;background:var(--color-surface);flex:none">
+<span style="font-size:11.5px;color:var(--color-neutral-700);flex:none">min</span>
+</div>
 </div>
 <div>
 <div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Lesson</div>
@@ -304,6 +314,11 @@ a:hover{color:var(--color-accent-600)}
 <div style="display:flex;gap:8px;width:100%">
 <button onClick="{{ toggleTimer }}" style="{{ timerBtn }}" style-hover="opacity:.9">{{ timerLabel }}</button>
 <button onClick="{{ resetTimer }}" class="btn btn-secondary" style="border-radius:999px;padding:12px 18px">Reset</button>
+</div>
+<div style="display:flex;align-items:center;gap:9px;width:100%;border-top:1px solid var(--color-neutral-300);padding-top:13px">
+<span style="font-size:12.5px;color:var(--color-neutral-700);flex:1">Or just type the minutes</span>
+<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ minsVal }}" onChange="{{ setMins }}" class="input" style="border-radius:999px;width:80px;text-align:center;font-size:14px;padding:9px 10px;flex:none">
+<span style="font-size:12.5px;color:var(--color-neutral-700);flex:none">min</span>
 </div>
 </div>
 
@@ -546,6 +561,72 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </sc-if>
 
+<sc-if value="{{ isOutcomes }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--color-accent-2-200);border-radius:var(--radius-lg);padding:16px">
+<div style="display:flex;align-items:baseline;gap:8px">
+<div style="font-family:var(--font-heading);font-size:34px;line-height:1;color:var(--color-accent-2-900)">{{ onCount }}</div>
+<div style="font-size:12.5px;color:var(--color-accent-2-900)">of 20 outcomes on this year's plan</div>
+</div>
+<div style="font-size:12px;color:var(--color-accent-2-900);margin-top:8px">{{ evCount }} of them {{ evHas }} logged evidence for {{ syLabel }}. Roots asks for progress, not mastery — an outcome counts if he moved toward it.</div>
+</div>
+
+<div>
+<button onClick="{{ toggleRef }}" style="width:100%;border:1.5px solid var(--color-neutral-400);background:transparent;cursor:pointer;border-radius:999px;padding:10px 14px;font-size:12.5px;color:var(--color-neutral-800);text-align:left">{{ refLabel }}</button>
+<sc-if value="{{ refOpen }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;margin-top:9px;display:flex;flex-direction:column;gap:13px">
+<div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.5">Roots tracks the 20 outcomes above, not these. But literacy and numeracy detail is required annually, so here is what Alberta expects of a Kindergarten class — a sanity check, not a requirement on you.</div>
+<sc-for list="{{ abK }}" as="a" hint-placeholder-count="2">
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:7px">{{ a.area }}</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ a.items }}" as="i" hint-placeholder-count="4">
+<div style="font-size:12.5px;line-height:1.45;color:var(--color-text);padding-left:12px;border-left:2px solid var(--color-accent-300)">{{ i.t }}</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="font-size:11px;color:var(--color-neutral-700);line-height:1.5;border-top:1px solid var(--color-divider);padding-top:11px">Fine Arts has no renewed Kindergarten curriculum — art, music and drama are still yours to shape, which is why outcome (l) is where they land.</div>
+</div>
+</sc-if>
+</div>
+
+<sc-for list="{{ outGroups }}" as="g" hint-placeholder-count="7">
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">{{ g.area }}</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ g.items }}" as="o" hint-placeholder-count="2">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:14px 15px;display:flex;flex-direction:column;gap:11px">
+<div style="display:flex;align-items:flex-start;gap:11px">
+<span style="{{ o.badge }}">{{ o.letter }}</span>
+<span style="flex:1;min-width:0;font-size:13.5px;line-height:1.45;text-wrap:pretty">{{ o.text }}</span>
+</div>
+<button onClick="{{ o.toggle }}" style="{{ o.toggleStyle }}" style-hover="opacity:.85">{{ o.toggleLabel }}</button>
+<sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--color-divider);padding-top:11px">
+<div>
+<div style="font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:6px">Shown through</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
+<sc-for list="{{ o.chips }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.tap }}" style="{{ c.style }}" style-hover="opacity:.85">{{ c.name }}</button>
+</sc-for>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:7px">{{ o.evLine }}</div>
+</div>
+<textarea class="input" placeholder="How else did he show this? A field trip, a conversation, a habit…" value="{{ o.note }}" onChange="{{ o.setNote }}" style="border-radius:var(--radius-md);min-height:52px;padding:10px 12px;font-size:12.5px;line-height:1.5;background:var(--color-bg)"></textarea>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+
+<button onClick="{{ copyOutcomes }}" class="btn btn-primary btn-block" style="border-radius:999px;padding:13px">{{ copyOutLabel }}</button>
+<div style="font-size:11.5px;color:var(--color-neutral-700);line-height:1.5;text-align:center">Paste into your Roots program plan, or bring it to one of the two assessments.</div>
+</div>
+</sc-if>
+
 <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
 <div style="display:flex;flex-direction:column;gap:16px">
 <div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:16px">
@@ -667,7 +748,7 @@ Photograph the lesson plan
 <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}</button>
 </sc-for>
 </div>
-<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-800);margin-bottom:7px">Ready-made · loads into {{ curSubjectName }}</div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-800);margin-bottom:7px">Ready-made lesson plans</div>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
 <sc-for list="{{ presets }}" as="p" hint-placeholder-count="2">
 <button onClick="{{ p.load }}" style="{{ p.style }}" style-hover="background:var(--color-accent-300)">{{ p.label }}</button>
@@ -722,7 +803,7 @@ Photograph the lesson plan
 
 </div>
 
-<div style="flex:none;display:flex;padding:7px 8px calc(env(safe-area-inset-bottom) + 10px);background:var(--color-surface);border-top:1px solid var(--color-divider)">
+<div class="rr-tabs" style="display:flex;padding:7px 8px calc(env(safe-area-inset-bottom) + 10px);background:var(--color-surface);border-top:1px solid var(--color-divider);box-shadow:0 -6px 18px rgba(32,30,29,.06);z-index:5">
 <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
 <button onClick="{{ t.pick }}" style="{{ t.style }}">
 <span style="{{ t.mark }}"></span>
@@ -762,6 +843,86 @@ const parse = (k) => { const p = k.split('-'); return new Date(+p[0], +p[1] - 1,
 const addDays = (d, n) => { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; };
 const monKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 
+// The 20 lettered outcomes of the Schedule of Learning Outcomes (SOLO), from the
+// Home Education Regulation under the Education Act. Roots' program plan asks which
+// of these a child will demonstrate PROGRESS toward this year — not mastery.
+const SOLO = [
+  ['a', 'Read for information, understanding and enjoyment', 'English Language Arts'],
+  ['b', 'Write and speak clearly, accurately and appropriately for the context', 'English Language Arts'],
+  ['c', 'Use mathematics to solve problems in business, science and daily life situations', 'Mathematics'],
+  ['d', 'Understand the physical world, ecology and the diversity of life', 'Science'],
+  ['e', 'Understand the scientific method, the nature of science and technology and their application to daily life', 'Science'],
+  ['f', 'Know the history and geography of Canada and have a general understanding of world history and geography', 'Social Studies'],
+  ['g', "Understand Canada's political, social and economic systems within a global context", 'Social Studies'],
+  ['h', "Respect the cultural diversity, the religious diversity and the common values of Canada", 'Social Studies'],
+  ['i', 'Demonstrate desirable personal characteristics such as respect, responsibility, fairness, honesty, caring, loyalty and commitment to democratic ideals', 'Cross-curricular'],
+  ['j', 'Recognize the importance of personal well-being and appreciate how family and others contribute to that well-being', 'Health'],
+  ['k', 'Know the basic requirements of an active, healthful lifestyle', 'Health'],
+  ['l', 'Understand and appreciate literature, the arts and the creative process', 'Fine Arts'],
+  ['m', 'Research an issue thoroughly and evaluate the credibility and reliability of information sources', 'Cross-curricular'],
+  ['n', 'Demonstrate critical and creative thinking skills in problem solving and decision making', 'Cross-curricular'],
+  ['o', 'Demonstrate competence in using information technologies', 'Cross-curricular'],
+  ['p', 'Know how to work independently and as part of a team', 'Cross-curricular'],
+  ['q', 'Manage time and other resources needed to complete a task', 'Cross-curricular'],
+  ['r', 'Demonstrate initiative, leadership, flexibility and persistence', 'Cross-curricular'],
+  ['s', 'Evaluate their own endeavors and continually strive to improve', 'Cross-curricular'],
+  ['t', 'Have the desire and realize the need for life-long learning', 'Cross-curricular'],
+];
+const SOLO_AREAS = ['English Language Arts', 'Mathematics', 'Science', 'Social Studies', 'Health', 'Fine Arts', 'Cross-curricular'];
+// Alberta Programs of Study, Kindergarten — the grade-level benchmarks, for reference
+// only. Roots tracks SOLO, but literacy and numeracy detail is required annually.
+const AB_K = [
+  ['English Language Arts and Literature', [
+    'Develop listening and speaking skills by sharing ideas, stories and poems',
+    'Recognize and write some letters and words',
+    'Share understandings of ideas and information about people, places or things that are real or imaginary',
+    'Express ideas and information creatively',
+    'Contribute to discussions by asking questions and speaking in sentences that contain complete ideas',
+    'Copy words to become familiar with how words are spelled',
+  ]],
+  ['Mathematics', [
+    'Count and represent quantities within 10',
+    'Recognize 2-D and 3-D shapes in the environment',
+    'Compare objects by length, area, weight, and capacity',
+    'Order a sequence of events according to time',
+  ]],
+  ['Science', [
+    'Explore properties using the 5 senses',
+    'Examine movement of objects, humans and other animals',
+    'Examine components of environments',
+    'Protect the environment by reducing waste, recycling and reusing',
+    'Explore the purpose of instructions',
+  ]],
+  ['Social Studies', [
+    'Places in communities',
+    'Cultures, traditions and histories',
+    'Needs and wants',
+    'Leaders in communities',
+    'Cooperation and collaboration in groups',
+  ]],
+  ['Physical Education and Wellness', [
+    'Perform physical activities that provide personal enjoyment',
+    'Spatial awareness helps people move safely during various physical activities',
+    'Healthy relationships support social-emotional well-being',
+    'Explore a variety of foods that help the body grow',
+    'Personal boundaries can be communicated through words and actions',
+    'Explore the value of Canadian coins and bills',
+  ]],
+];
+// Which of your subjects plausibly speaks to an outcome, guessed from its name.
+// Only a starting point — you tap subjects on or off per outcome.
+const SOLO_HINTS = {
+  a: ['read', 'book', 'liter', 'phonic'], b: ['writ', 'hand', 'spell', 'speak', 'language', 'french', 'lang'],
+  c: ['math', 'numer', 'number'], d: ['scien', 'nature', 'ecolog'], e: ['scien', 'experim'],
+  f: ['social', 'histor', 'geogra'], g: ['social', 'civic'], h: ['social', 'cultur', 'bible', 'faith'],
+  i: ['bible', 'faith', 'charact', 'devotion'], j: ['health', 'wellness'], k: ['phys', 'gym', 'sport', 'health', 'wellness'],
+  l: ['art', 'music', 'drama', 'dance', 'craft'],
+};
+function soloDefaults(letter, subjects) {
+  const hints = SOLO_HINTS[letter] || [];
+  return (subjects || []).filter(s => hints.some(h => (s.name || '').toLowerCase().indexOf(h) >= 0)).map(s => s.id);
+}
+
 function seed(todayKey) {
   const S = [
     ['bible', 'Bible Study', '#3d472b', 15, 'Genesis — creation to Joseph', 'Lesson ', 12, 60],
@@ -790,7 +951,7 @@ class Component extends DCLogic {
   state = {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
     secs: 0, running: false, timerKey: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
-    bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, drafts: {}, copied: false, resetArmed: false,
+    bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false,
     tocUrl: null, ocr: '',
   };
 
@@ -808,7 +969,7 @@ class Component extends DCLogic {
     }
   }
 
-  componentWillUnmount() { clearInterval(this._t); }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._arm); }
 
   save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
   mutate(fn, cb) {
@@ -902,6 +1063,62 @@ class Component extends DCLogic {
       const p = timerKey.split('#');
       this.patchAt(p[0], +p[1], e => { e.secs = (e.secs || 0) + secs; });
     }
+  }
+  // Manual override: type the minutes directly. Stops a running timer on that
+  // entry first so the tick doesn't fight the typed number.
+  setMinsAt(dateKey, idx, raw) {
+    const v = Math.max(0, Math.min(600, Math.round(parseFloat(raw) || 0)));
+    if (this.state.timerKey === dateKey + '#' + idx) {
+      clearInterval(this._t);
+      this.setState({ secs: 0, running: false });
+    }
+    this.patchAt(dateKey, idx, e => { e.secs = v * 60; });
+  }
+  // Sep 1 – Aug 31, the window a facilitator visit looks at.
+  schoolYear() {
+    const n = new Date(), y = n.getMonth() >= 8 ? n.getFullYear() : n.getFullYear() - 1;
+    return { from: y + '-09-01', to: (y + 1) + '-08-31', label: y + '/' + (y + 1) };
+  }
+  outcome(letter) {
+    const o = ((this.state.d || {}).outcomes || {})[letter];
+    return { on: !!(o && o.on), note: (o && o.note) || '', subs: (o && o.subs) || soloDefaults(letter, (this.state.d || {}).subjects) };
+  }
+  patchOutcome(letter, fn) {
+    this.mutate(dd => {
+      if (!dd.outcomes) dd.outcomes = {};
+      if (!dd.outcomes[letter]) dd.outcomes[letter] = { on: false, note: '', subs: soloDefaults(letter, dd.subjects) };
+      fn(dd.outcomes[letter]);
+    });
+  }
+  // Evidence isn't self-reported — it's whatever you already logged against the
+  // subjects you tied to this outcome, this school year.
+  evidence(subs) {
+    const { from, to } = this.schoolYear(), log = (this.state.d || {}).log || {};
+    let lessons = 0, secs = 0;
+    Object.keys(log).forEach(k => {
+      if (k < from || k > to) return;
+      (log[k] || []).forEach(e => {
+        if (subs.indexOf(e.sid) < 0) return;
+        if (e.status === 'done') lessons++;
+        secs += e.secs || 0;
+      });
+    });
+    return { lessons, secs };
+  }
+  outcomesText() {
+    const sy = this.schoolYear(), d = this.state.d;
+    const nm = id => { const s = (d.subjects || []).find(x => x.id === id); return s ? s.name : id; };
+    let out = d.student.name + ' · ' + d.student.grade + ' · ' + sy.label + '\nProgress toward the Schedule of Learning Outcomes\n';
+    SOLO.forEach(([L, text]) => {
+      const o = this.outcome(L);
+      if (!o.on) return;
+      const ev = this.evidence(o.subs);
+      out += '\n(' + L + ') ' + text + '\n';
+      if (o.subs.length) out += '   Through: ' + o.subs.map(nm).join(', ') + '\n';
+      if (ev.lessons) out += '   ' + ev.lessons + (ev.lessons === 1 ? ' lesson' : ' lessons') + ' logged, ' + (ev.secs / 3600).toFixed(1) + ' hours\n';
+      if (o.note) out += '   ' + o.note + '\n';
+    });
+    return out;
   }
   toggleTimerAt(dateKey, idx) {
     const k = dateKey + '#' + idx;
@@ -1080,6 +1297,7 @@ class Component extends DCLogic {
       ahead: ['Look ahead', 'materials for next week'],
       books: ['Books', d.student.name + "'s reading"],
       report: ['Monthly report', 'for our own records'],
+      outcomes: ['Alberta outcomes', 'progress, not mastery'],
       checkin: ['Check-in', 'once a month'],
       album: ['Album & portfolio', st.photos.length + ' items'],
       setup: ['Setup', 'subjects, curriculum, backup'],
@@ -1141,6 +1359,8 @@ class Component extends DCLogic {
           background: running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: running ? '#fff' : 'var(--color-bg)' },
         toggleTimer: () => this.toggleTimerAt(dk, i),
         resetTimer: () => { if (st.timerKey === tk) { clearInterval(this._t); this.setState({ secs: 0, running: false }); } this.patchAt(dk, i, x => { x.secs = 0; }); },
+        minsVal: e.secs ? String(Math.round(e.secs / 60)) : '',
+        setMins: (ev) => this.setMinsAt(dk, i, ev.target.value),
         customVal: e.custom || '', isCustom: !!e.custom,
         setCustom: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { if (v.trim()) x.custom = v; else delete x.custom; }); },
         clearCustom: () => this.patchAt(dk, i, x => { delete x.custom; }),
@@ -1384,6 +1604,8 @@ class Component extends DCLogic {
       timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: lRunning ? 'var(--color-accent-2)' : 'var(--color-accent)', color: lRunning ? '#fff' : 'var(--color-bg)' },
       toggleTimer: () => this.toggleTimerAt(st.lessonDate, st.lessonIdx),
       resetTimer: () => { clearInterval(this._t); this.setState({ secs: 0, running: false }); this.patchEntry(e => { e.secs = 0; }); },
+      minsVal: le.secs ? String(Math.round(le.secs / 60)) : '',
+      setMins: (ev) => this.setMinsAt(st.lessonDate, st.lessonIdx, ev.target.value),
       tocUrl: st.tocUrl, hasToc: !!st.tocUrl,
       tocStyle: { width: '100%', height: 200, borderRadius: 'var(--radius-md)', backgroundImage: 'url(' + (st.tocUrl || '') + ')', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: 'var(--color-accent-100)' },
       ocrStatus: st.ocr,
@@ -1481,6 +1703,49 @@ class Component extends DCLogic {
       noPhotos: !st.photos.some(p => p.kind === st.albumTab),
       emptyAlbumLine: st.albumTab === 'photos' ? 'Photos live on this device only — snap the nature walk, the volcano, the finished page.' : 'Work samples: handwriting pages, drawings, a photo of a finished worksheet.',
 
+      isOutcomes: st.screen === 'outcomes',
+      syLabel: this.schoolYear().label,
+      onCount: SOLO.filter(([L]) => this.outcome(L).on).length,
+      evCount: SOLO.filter(([L]) => { const o = this.outcome(L); return o.on && this.evidence(o.subs).lessons > 0; }).length,
+      evHas: SOLO.filter(([L]) => { const o = this.outcome(L); return o.on && this.evidence(o.subs).lessons > 0; }).length === 1 ? 'has' : 'have',
+      refOpen: !!st.refOpen,
+      refLabel: st.refOpen ? 'Hide the Kindergarten benchmarks' : 'Alberta Kindergarten benchmarks',
+      toggleRef: () => this.setState(s => ({ refOpen: !s.refOpen })),
+      abK: AB_K.map(([area, items]) => ({ area, items: items.map(t => ({ t })) })),
+      outGroups: SOLO_AREAS.map(area => ({
+        area,
+        items: SOLO.filter(([, , a]) => a === area).map(([L, text]) => {
+          const o = this.outcome(L), ev = this.evidence(o.subs);
+          return {
+            letter: '(' + L + ')', text, on: o.on,
+            badge: { flex: 'none', width: 30, height: 30, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-heading)', fontSize: 13, background: o.on ? 'var(--color-accent)' : 'var(--color-neutral-200)',
+              color: o.on ? 'var(--color-bg)' : 'var(--color-neutral-700)' },
+            toggle: () => this.patchOutcome(L, x => { x.on = !x.on; }),
+            toggleLabel: o.on ? 'On the plan' : 'Add to the plan',
+            toggleStyle: { cursor: 'pointer', borderRadius: 999, padding: '6px 13px', fontSize: 11.5, flex: 'none',
+              border: o.on ? '1.5px solid transparent' : '1.5px solid var(--color-neutral-400)',
+              background: o.on ? 'var(--color-accent-2-300)' : 'transparent',
+              color: o.on ? 'var(--color-accent-2-900)' : 'var(--color-neutral-800)' },
+            evLine: ev.lessons ? ev.lessons + (ev.lessons === 1 ? ' lesson · ' : ' lessons · ') + (ev.secs / 3600).toFixed(1) + ' hours logged this year'
+              : (o.subs.length ? 'nothing logged against these subjects yet' : 'tie a subject to it and evidence fills in'),
+            chips: S.map(s => {
+              const linked = o.subs.indexOf(s.id) >= 0;
+              return { name: s.name,
+                tap: () => this.patchOutcome(L, x => { x.subs = linked ? x.subs.filter(y => y !== s.id) : x.subs.concat([s.id]); }),
+                style: { cursor: 'pointer', borderRadius: 999, padding: '5px 11px', fontSize: 11.5, border: '1.5px solid ' + (linked ? 'transparent' : 'var(--color-neutral-400)'),
+                  background: linked ? s.color : 'transparent', color: linked ? '#fff' : 'var(--color-neutral-800)' } };
+            }),
+            note: o.note,
+            setNote: (ev2) => { const v = ev2.target.value; this.patchOutcome(L, x => { x.note = v; }); },
+          };
+        }),
+      })),
+      copyOutLabel: st.copied ? 'Copied ✓' : 'Copy for my facilitator',
+      copyOutcomes: () => { const txt = this.outcomesText();
+        if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
+        this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1800); },
+
       isProgress: st.screen === 'progress',
       allPct: allTotal ? Math.round(allDone / allTotal * 100) + '%' : '—',
       allFill: { width: (allTotal ? Math.round(allDone / allTotal * 100) : 0) + '%', height: '100%', borderRadius: 999, background: 'var(--color-accent)' },
@@ -1508,20 +1773,35 @@ class Component extends DCLogic {
         style: { cursor: 'pointer', borderRadius: 999, padding: '7px 12px', fontSize: 12, border: '1.5px solid ' + ((st.curPick || S[0].id) === s.id ? 'transparent' : 'var(--color-accent-600)'), background: (st.curPick || S[0].id) === s.id ? 'var(--color-accent)' : 'transparent', color: (st.curPick || S[0].id) === s.id ? 'var(--color-bg)' : 'var(--color-accent-800)' } })),
       curSubjectName: sub(st.curPick || (S[0] && S[0].id)).name,
       presets: [
-        { label: 'Math With Confidence · 128', name: 'Math With Confidence',
+        { label: 'Math With Confidence · 128', name: 'Math With Confidence', subject: 'Math',
           items: (() => { const a = []; for (let u = 1; u <= 32; u++) for (let l = 1; l <= 4; l++) a.push(u + '.' + l); return a; })() },
-        { label: 'Reading · 100 lessons', name: 'Reading — 100 lessons',
+        { label: 'Reading · 100 lessons', name: 'Reading — 100 lessons', subject: 'Reading',
           items: Array.from({ length: 100 }, (_, i) => 'Lesson ' + (i + 1)) },
-      ].map(p => ({
-        label: p.label,
-        style: { cursor: 'pointer', borderRadius: 999, padding: '8px 13px', fontSize: 12, border: '1.5px solid var(--color-accent-600)', background: 'transparent', color: 'var(--color-accent-800)' },
-        load: () => {
-          const sid = st.curPick || (S[0] && S[0].id);
-          if (!sid) return;
-          this.mutate(dd => { dd.cur[sid] = { name: p.name, pos: 0, items: p.items.slice() }; },
-            () => this.setState(x => ({ drafts: Object.assign({}, x.drafts, { curDone: p.items.length + ' lessons loaded into ' + sub(sid).name }) })));
-        },
-      })),
+      ].map(p => {
+        // a named preset belongs to its own subject; the chip is only a fallback
+        const owner = S.find(s => s.name.toLowerCase() === p.subject.toLowerCase());
+        const sid = owner ? owner.id : (st.curPick || (S[0] && S[0].id));
+        const existing = (d.cur[sid] || { items: [] }).items.length;
+        const armed = st.armPreset === p.name;
+        return {
+          label: armed ? 'Replace ' + (d.cur[sid] || {}).name + '?' : p.label + ' → ' + (sid ? sub(sid).name : '—'),
+          style: { cursor: 'pointer', borderRadius: 999, padding: '8px 13px', fontSize: 12,
+            border: '1.5px solid ' + (armed ? 'transparent' : 'var(--color-accent-600)'),
+            background: armed ? 'var(--color-accent)' : 'transparent', color: armed ? 'var(--color-bg)' : 'var(--color-accent-800)' },
+          load: () => {
+            if (!sid) return;
+            if (existing && !armed) {
+              this.setState({ armPreset: p.name, curPick: sid });
+              clearTimeout(this._arm);
+              this._arm = setTimeout(() => this.setState({ armPreset: null }), 5000);
+              return;
+            }
+            this.mutate(dd => { dd.cur[sid] = { name: p.name, pos: 0, items: p.items.slice() }; },
+              () => this.setState(x => ({ armPreset: null, curPick: sid,
+                drafts: Object.assign({}, x.drafts, { curDone: p.items.length + ' lessons loaded into ' + sub(sid).name + ' — set your place on Progress' }) })));
+          },
+        };
+      }),
       curName: draft('cn') || '', setCurName: setDraft('cn'),
       curPaste: draft('cp'), setCurPaste: setDraft('cp'),
       curStatus: st.drafts.curDone || '',
@@ -1559,6 +1839,7 @@ class Component extends DCLogic {
       },
       moreItems: [
         ['album', 'Album & portfolio', st.photos.length + ' photos and samples', '#c67139'],
+        ['outcomes', 'Alberta outcomes', 'for the Roots program plan', '#3d472b'],
         ['ahead', 'Look ahead', 'materials for next week', '#7a8a5e'],
         ['checkin', d.student.name + "'s check-in", QS.some((q, i) => answers[i]) ? 'done this month' : 'not done this month', '#8c491a'],
       ].map(([s, n, sb, c]) => ({ name: n, sub: sb, dot: dot(c, 11), go: () => this.setState(x => ({ screen: s, stack: x.stack.concat([x.screen]) })) })),
