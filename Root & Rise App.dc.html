@@ -109,10 +109,17 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ l.toggleTimer }}" style="{{ l.timerBtn }}" style-hover="opacity:.9">{{ l.timerLabel }}</button>
 <button onClick="{{ l.resetTimer }}" style="border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-neutral-700)">reset</button>
 </div>
-<div style="display:flex;align-items:center;gap:8px;border-top:1px solid var(--color-neutral-300);padding-top:9px">
-<span style="font-size:11.5px;color:var(--color-neutral-700);flex:1">Or just type the minutes</span>
-<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ l.minsVal }}" onChange="{{ l.setMins }}" class="input" style="border-radius:999px;width:72px;text-align:center;font-size:13.5px;padding:7px 8px;background:var(--color-surface);flex:none">
+<div style="border-top:1px solid var(--color-neutral-300);padding-top:9px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="font-size:11.5px;color:var(--color-neutral-700);flex:1">Or set the minutes by hand</span>
+<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ l.mf.val }}" onChange="{{ l.mf.type }}" onBlur="{{ l.mf.commit }}" onKeyDown="{{ l.mf.keyDown }}" class="input" style="border-radius:999px;width:72px;text-align:center;font-size:15px;padding:8px;background:var(--color-surface);flex:none">
 <span style="font-size:11.5px;color:var(--color-neutral-700);flex:none">min</span>
+</div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ l.mf.bumps }}" as="b" hint-placeholder-count="4">
+<button onClick="{{ b.add }}" style="flex:1;cursor:pointer;border:1px solid var(--color-neutral-300);background:var(--color-surface);border-radius:999px;padding:8px 0;font-size:12.5px;color:var(--color-text)" style-hover="background:var(--color-accent-100);border-color:var(--color-accent-300)">{{ b.label }}</button>
+</sc-for>
+</div>
 </div>
 </div>
 <div>
@@ -315,10 +322,17 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ toggleTimer }}" style="{{ timerBtn }}" style-hover="opacity:.9">{{ timerLabel }}</button>
 <button onClick="{{ resetTimer }}" class="btn btn-secondary" style="border-radius:999px;padding:12px 18px">Reset</button>
 </div>
-<div style="display:flex;align-items:center;gap:9px;width:100%;border-top:1px solid var(--color-neutral-300);padding-top:13px">
-<span style="font-size:12.5px;color:var(--color-neutral-700);flex:1">Or just type the minutes</span>
-<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ minsVal }}" onChange="{{ setMins }}" class="input" style="border-radius:999px;width:80px;text-align:center;font-size:14px;padding:9px 10px;flex:none">
+<div style="width:100%;border-top:1px solid var(--color-neutral-300);padding-top:13px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:9px">
+<span style="font-size:12.5px;color:var(--color-neutral-700);flex:1">Or set the minutes by hand</span>
+<input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ mf.val }}" onChange="{{ mf.type }}" onBlur="{{ mf.commit }}" onKeyDown="{{ mf.keyDown }}" class="input" style="border-radius:999px;width:80px;text-align:center;font-size:16px;padding:10px;flex:none">
 <span style="font-size:12.5px;color:var(--color-neutral-700);flex:none">min</span>
+</div>
+<div style="display:flex;gap:7px">
+<sc-for list="{{ mf.bumps }}" as="b" hint-placeholder-count="4">
+<button onClick="{{ b.add }}" style="flex:1;cursor:pointer;border:1px solid var(--color-neutral-300);background:var(--color-bg);border-radius:999px;padding:11px 0;font-size:13.5px;color:var(--color-text)" style-hover="background:var(--color-accent-100);border-color:var(--color-accent-300)">{{ b.label }}</button>
+</sc-for>
+</div>
 </div>
 </div>
 
@@ -1074,6 +1088,44 @@ class Component extends DCLogic {
     }
     this.patchAt(dateKey, idx, e => { e.secs = v * 60; });
   }
+  // Add or subtract minutes with a tap — no keyboard, no caret fighting.
+  addMinsAt(dateKey, idx, delta) {
+    const cur = ((this.state.d.log[dateKey] || [])[idx] || {}).secs || 0;
+    const v = Math.max(0, Math.min(600, Math.round(cur / 60) + delta));
+    if (this.state.timerKey === dateKey + '#' + idx) {
+      clearInterval(this._t);
+      this.setState({ secs: 0, running: false });
+    }
+    this.clearMinsDraft(dateKey, idx);
+    this.patchAt(dateKey, idx, e => { e.secs = v * 60; });
+  }
+  clearMinsDraft(dateKey, idx) {
+    const k = 'mins:' + dateKey + '#' + idx;
+    this.setState(s => { const dr = Object.assign({}, s.drafts); delete dr[k]; return { drafts: dr }; });
+  }
+  // The field keeps whatever you typed as-is while you type, and only writes
+  // it into the log on blur or Enter. Nothing reformats under your fingers.
+  minsField(dateKey, idx, entry) {
+    const k = 'mins:' + dateKey + '#' + idx;
+    const dr = this.state.drafts[k];
+    const stored = entry && entry.secs ? String(Math.round(entry.secs / 60)) : '';
+    const commit = () => {
+      const raw = this.state.drafts[k];
+      if (raw === undefined) return;
+      this.clearMinsDraft(dateKey, idx);
+      this.setMinsAt(dateKey, idx, raw === '' ? 0 : raw);
+    };
+    return {
+      val: dr === undefined ? stored : dr,
+      type: (ev) => { const v = ev.target.value; this.setState(s => ({ drafts: Object.assign({}, s.drafts, { [k]: v }) })); },
+      commit,
+      keyDown: (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } },
+      bumps: [5, 10, 15, 30].map(n => ({
+        label: '+' + n,
+        add: () => this.addMinsAt(dateKey, idx, n),
+      })),
+    };
+  }
   // Sep 1 – Aug 31, the window a facilitator visit looks at.
   schoolYear() {
     const n = new Date(), y = n.getMonth() >= 8 ? n.getFullYear() : n.getFullYear() - 1;
@@ -1359,8 +1411,7 @@ class Component extends DCLogic {
           background: running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: running ? '#fff' : 'var(--color-bg)' },
         toggleTimer: () => this.toggleTimerAt(dk, i),
         resetTimer: () => { if (st.timerKey === tk) { clearInterval(this._t); this.setState({ secs: 0, running: false }); } this.patchAt(dk, i, x => { x.secs = 0; }); },
-        minsVal: e.secs ? String(Math.round(e.secs / 60)) : '',
-        setMins: (ev) => this.setMinsAt(dk, i, ev.target.value),
+        mf: this.minsField(dk, i, e),
         customVal: e.custom || '', isCustom: !!e.custom,
         setCustom: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { if (v.trim()) x.custom = v; else delete x.custom; }); },
         clearCustom: () => this.patchAt(dk, i, x => { delete x.custom; }),
@@ -1604,8 +1655,7 @@ class Component extends DCLogic {
       timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: lRunning ? 'var(--color-accent-2)' : 'var(--color-accent)', color: lRunning ? '#fff' : 'var(--color-bg)' },
       toggleTimer: () => this.toggleTimerAt(st.lessonDate, st.lessonIdx),
       resetTimer: () => { clearInterval(this._t); this.setState({ secs: 0, running: false }); this.patchEntry(e => { e.secs = 0; }); },
-      minsVal: le.secs ? String(Math.round(le.secs / 60)) : '',
-      setMins: (ev) => this.setMinsAt(st.lessonDate, st.lessonIdx, ev.target.value),
+      mf: this.minsField(st.lessonDate, st.lessonIdx, le),
       tocUrl: st.tocUrl, hasToc: !!st.tocUrl,
       tocStyle: { width: '100%', height: 200, borderRadius: 'var(--radius-md)', backgroundImage: 'url(' + (st.tocUrl || '') + ')', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: 'var(--color-accent-100)' },
       ocrStatus: st.ocr,
