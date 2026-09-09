@@ -559,7 +559,7 @@ a:hover{color:var(--color-accent-600)}
 </div>
 </sc-for>
 <sc-if value="{{ rIdeasEmpty }}" hint-placeholder-val="{{ true }}">
-<div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.5">Nothing noted this month. <a href="#" onClick="{{ goIdeas }}">Keep an idea</a> when he asks about something.</div>
+<div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.5">Nothing noted this month. <button onClick="{{ goIdeas }}" style="border:none;background:transparent;padding:0;cursor:pointer;font:inherit;color:var(--color-accent-700);text-decoration:underline" style-hover="color:var(--color-accent-600)">Keep an idea</button> when he asks about something.</div>
 </sc-if>
 </div>
 </div>
@@ -967,6 +967,7 @@ Photograph the lesson plan
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:900}}">
 const KEY = 'rootrise.data.v1';
 const PKEY = 'rootrise.photos.v1';
+const RKEY = 'rootrise.timer.v1';
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const QS = [
@@ -1103,7 +1104,7 @@ function seed(todayKey) {
 class Component extends DCLogic {
   state = {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
-    secs: 0, running: false, timerKey: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
+    secs: 0, running: false, timerKey: null, startedAt: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
     bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
     ideaWhen: 'anytime', ideaSid: '',
     tocUrl: null, ocr: '',
@@ -1121,9 +1122,45 @@ class Component extends DCLogic {
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
+
+    // A timer left running survives leaving the app: we recorded the moment it
+    // started, so we can work out the real elapsed time on the way back in.
+    let run = null;
+    try { run = JSON.parse(localStorage.getItem(RKEY)); } catch (e) { run = null; }
+    if (run && run.key && run.at) {
+      const gone = (Date.now() - run.at) / 1000;
+      if (gone > 0 && gone < 10800) { // under 3h: still a plausible lesson
+        this._t = setInterval(() => this.syncTimer(), 1000);
+        this.setState({ timerKey: run.key, running: true, startedAt: run.at, secs: Math.round(gone) });
+      } else {
+        this.saveRun(null); // left overnight — don't log a phantom 14 hours
+      }
+    }
+    this._wake = () => this.syncTimer();
+    document.addEventListener('visibilitychange', this._wake);
+    window.addEventListener('focus', this._wake);
   }
 
-  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._arm); }
+  componentWillUnmount() {
+    clearInterval(this._t);
+    clearTimeout(this._arm);
+    document.removeEventListener('visibilitychange', this._wake);
+    window.removeEventListener('focus', this._wake);
+  }
+
+  // ── timer, measured against the wall clock rather than counted in ticks
+  saveRun(rec) {
+    try { rec ? localStorage.setItem(RKEY, JSON.stringify(rec)) : localStorage.removeItem(RKEY); } catch (e) {}
+  }
+  elapsed() {
+    return this.state.startedAt ? Math.max(0, Math.round((Date.now() - this.state.startedAt) / 1000)) : this.state.secs;
+  }
+  syncTimer() { if (this.state.running) this.setState({ secs: this.elapsed() }); }
+  stopTimer() {
+    clearInterval(this._t);
+    this.saveRun(null);
+    this.setState({ secs: 0, running: false, startedAt: null });
+  }
 
   save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
   mutate(fn, cb) {
@@ -1210,9 +1247,11 @@ class Component extends DCLogic {
   // Commit any running seconds into whichever entry the timer belongs to.
   // Called before every exit path so time is never silently lost.
   flushTime() {
-    const { secs, timerKey, running } = this.state;
+    const { timerKey, running } = this.state;
+    const secs = running ? this.elapsed() : this.state.secs;
     clearInterval(this._t);
-    if (secs || running) this.setState({ secs: 0, running: false });
+    this.saveRun(null);
+    if (secs || running) this.setState({ secs: 0, running: false, startedAt: null });
     if (secs && timerKey) {
       const p = timerKey.split('#');
       this.patchAt(p[0], +p[1], e => { e.secs = (e.secs || 0) + secs; });
@@ -1223,8 +1262,7 @@ class Component extends DCLogic {
   setMinsAt(dateKey, idx, raw) {
     const v = Math.max(0, Math.min(600, Math.round(parseFloat(raw) || 0)));
     if (this.state.timerKey === dateKey + '#' + idx) {
-      clearInterval(this._t);
-      this.setState({ secs: 0, running: false });
+      this.stopTimer();
     }
     this.patchAt(dateKey, idx, e => { e.secs = v * 60; });
   }
@@ -1233,8 +1271,7 @@ class Component extends DCLogic {
     const cur = ((this.state.d.log[dateKey] || [])[idx] || {}).secs || 0;
     const v = Math.max(0, Math.min(600, Math.round(cur / 60) + delta));
     if (this.state.timerKey === dateKey + '#' + idx) {
-      clearInterval(this._t);
-      this.setState({ secs: 0, running: false });
+      this.stopTimer();
     }
     this.clearMinsDraft(dateKey, idx);
     this.patchAt(dateKey, idx, e => { e.secs = v * 60; });
@@ -1317,15 +1354,18 @@ class Component extends DCLogic {
     const wasRunningHere = this.state.running && this.state.timerKey === k;
     this.flushTime();
     if (wasRunningHere) return;
-    this._t = setInterval(() => this.setState(s => ({ secs: s.secs + 1 })), 1000);
-    this.setState({ timerKey: k, running: true, secs: 0 });
+    const at = Date.now();
+    clearInterval(this._t);
+    this._t = setInterval(() => this.syncTimer(), 1000);
+    this.saveRun({ key: k, at: at });
+    this.setState({ timerKey: k, running: true, secs: 0, startedAt: at });
   }
   setStatus(dateKey, idx, k, shownRef) {
     const cur = (this.state.d.log[dateKey] || [])[idx];
     const target = cur && cur.status === k ? 'todo' : k; // tap the active one to undo
     const mine = this.state.timerKey === dateKey + '#' + idx;
-    const add = mine ? this.state.secs : 0;
-    if (mine) { clearInterval(this._t); this.setState({ secs: 0, running: false }); }
+    const add = mine ? this.elapsed() : 0;
+    if (mine) this.stopTimer();
     this.patchAt(dateKey, idx, (e, dd) => {
       if (add) e.secs = (e.secs || 0) + add;
       const was = e.status;
@@ -1574,7 +1614,7 @@ class Component extends DCLogic {
         timerBtn: { cursor: 'pointer', border: 'none', borderRadius: 999, padding: '10px 18px', fontFamily: 'var(--font-heading)', fontSize: 13.5,
           background: running ? 'var(--color-accent-2)' : 'var(--color-accent)', color: running ? '#fff' : 'var(--color-bg)' },
         toggleTimer: () => this.toggleTimerAt(dk, i),
-        resetTimer: () => { if (st.timerKey === tk) { clearInterval(this._t); this.setState({ secs: 0, running: false }); } this.patchAt(dk, i, x => { x.secs = 0; }); },
+        resetTimer: () => { if (st.timerKey === tk) this.stopTimer(); this.patchAt(dk, i, x => { x.secs = 0; }); },
         mf: this.minsField(dk, i, e),
         customVal: e.custom || '', isCustom: !!e.custom,
         setCustom: (ev) => { const v = ev.target.value; this.patchAt(dk, i, x => { if (v.trim()) x.custom = v; else delete x.custom; }); },
@@ -1808,7 +1848,8 @@ class Component extends DCLogic {
         const mats = d.mats.filter(m => m.date === k);
         return {
           day: DOW[dt.getDay()] + ', ' + MON[dt.getMonth()].slice(0, 3) + ' ' + dt.getDate(),
-          plan: (d.log[k] || []).map((e, i) => sub(e.sid).name).join(' · ') || 'activities only',
+          plan: (d.log[k] || []).map((e, i) => sub(e.sid).name).join(' · ')
+            || (d.acts.some(a => a.date === k) ? 'activities only' : 'nothing timetabled yet'),
           mats: mats.map(m => ({
             name: m.name, box: box(m.have), mark: m.have ? '✓' : '',
             chip: m.sid
@@ -1884,11 +1925,12 @@ class Component extends DCLogic {
 
       lesson: { subject: lsub.name, ref: lRef, before: le.before || '', after: le.after || '', dot: dot(lsub.color, 11) },
       clock: String(Math.floor(totalSecs / 60)).padStart(2, '0') + ':' + String(totalSecs % 60).padStart(2, '0'),
-      timerNote: le.secs ? mins(le.secs) + ' already logged · planned ' + lsub.mins + ' min' : 'planned ' + lsub.mins + ' min',
+      timerNote: lRunning ? 'Running — keeps counting if you leave the app'
+        : (le.secs ? mins(le.secs) + ' already logged · planned ' + lsub.mins + ' min' : 'planned ' + lsub.mins + ' min'),
       timerLabel: lRunning ? 'Pause & log' : (le.secs ? 'Keep going' : 'Start lesson'),
       timerBtn: { flex: 1, cursor: 'pointer', border: 'none', borderRadius: 999, padding: '12px', fontFamily: 'var(--font-heading)', fontSize: 14, background: lRunning ? 'var(--color-accent-2)' : 'var(--color-accent)', color: lRunning ? '#fff' : 'var(--color-bg)' },
       toggleTimer: () => this.toggleTimerAt(st.lessonDate, st.lessonIdx),
-      resetTimer: () => { clearInterval(this._t); this.setState({ secs: 0, running: false }); this.patchEntry(e => { e.secs = 0; }); },
+      resetTimer: () => { this.stopTimer(); this.patchEntry(e => { e.secs = 0; }); },
       mf: this.minsField(st.lessonDate, st.lessonIdx, le),
       tocUrl: st.tocUrl, hasToc: !!st.tocUrl,
       tocStyle: { width: '100%', height: 200, borderRadius: 'var(--radius-md)', backgroundImage: 'url(' + (st.tocUrl || '') + ')', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: 'var(--color-accent-100)' },
