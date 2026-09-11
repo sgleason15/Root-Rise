@@ -33,6 +33,53 @@ a:hover{color:var(--color-accent-600)}
 <div class="rr-shell" style="max-height:100dvh;display:flex;justify-content:center;background:var(--color-neutral-200);overflow:hidden">
 <div style="width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;background:var(--color-bg);position:relative;overflow:hidden">
 
+<sc-if value="{{ isRecover }}" hint-placeholder-val="{{ false }}">
+<div class="rr-scroll" style="position:absolute;inset:0;z-index:30;background:var(--color-bg);overflow-y:auto;padding:calc(env(safe-area-inset-top) + 26px) 20px calc(env(safe-area-inset-bottom) + 26px);display:flex;flex-direction:column;gap:16px">
+<div>
+<div style="font-family:var(--font-heading);font-size:24px;line-height:1.15;color:var(--color-accent-700)">Your data didn't load</div>
+<div style="font-size:13.5px;line-height:1.55;color:var(--color-text);margin-top:8px">Something on this iPhone made your records unreadable this time. <strong>Nothing has been overwritten</strong> — the app has stopped saving until you decide what to do.</div>
+</div>
+
+<sc-if value="{{ hasSnaps }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Saved snapshots on this phone</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ snapList }}" as="s" hint-placeholder-count="2">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:14px 16px;display:flex;align-items:center;gap:12px">
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:14.5px;color:var(--color-text)">{{ s.when }}</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:2px">{{ s.detail }}</span>
+</span>
+<button onClick="{{ s.restore }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px;flex:none">Restore</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ noSnaps }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px;font-size:13px;line-height:1.55;color:var(--color-accent-900)">There are no snapshots yet — this version is the first to keep them. If you exported a backup file before, load it below and you'll be whole again.</div>
+</sc-if>
+
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:15px;margin-bottom:4px">Load a backup file</div>
+<div style="font-size:12px;line-height:1.5;color:var(--color-neutral-700);margin-bottom:11px">Any <em>root-and-rise-backup</em> file you exported before, from Files or iCloud Drive.</div>
+<label class="btn btn-primary" style="border-radius:999px;font-size:13px;cursor:pointer">Choose a file<input type="file" accept="application/json,.json,.txt" onChange="{{ importFile }}" style="display:none"></label>
+<div style="font-size:11.5px;color:var(--color-accent-800);margin-top:8px">{{ importStatus }}</div>
+</div>
+
+<sc-if value="{{ recoverHasRaw }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ downloadRaw }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Save the unreadable data to a file</button>
+</sc-if>
+
+<div style="border-top:1px solid var(--color-neutral-300);padding-top:15px">
+<div style="font-size:12px;line-height:1.5;color:var(--color-neutral-700);margin-bottom:10px">Only if you're sure there's nothing to get back — this starts an empty year.</div>
+<button onClick="{{ startFresh }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">Start fresh instead</button>
+</div>
+</div>
+</sc-if>
+
+
 <div style="flex:none;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;display:flex;align-items:center;gap:10px;background:var(--color-bg)">
 <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
 <button onClick="{{ back }}" class="btn btn-secondary" style="width:36px;height:36px;padding:0;border-radius:999px;flex:none;font-size:18px">‹</button>
@@ -921,6 +968,23 @@ Photograph the lesson plan
 <label class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;cursor:pointer">Import a file<input type="file" accept="application/json,.json,.txt" onChange="{{ importFile }}" style="display:none"></label>
 <button onClick="{{ resetData }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">{{ resetLabel }}</button>
 </div>
+<sc-if value="{{ hasSnaps }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:14px;border-top:1px solid var(--color-neutral-300);padding-top:13px">
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:4px">Snapshots on this phone</div>
+<div style="font-size:12px;line-height:1.5;color:var(--color-neutral-700);margin-bottom:9px">Kept automatically, one a day for five days. Roll back if something goes wrong.</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ snapList }}" as="s" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:11px">
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:13.5px;color:var(--color-text)">{{ s.when }}</span>
+<span style="display:block;font-size:11px;color:var(--color-neutral-700)">{{ s.detail }}</span>
+</span>
+<button onClick="{{ s.restore }}" class="btn btn-secondary" style="border-radius:999px;font-size:12px;flex:none">Restore</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
 <div style="margin-top:12px">
 <textarea class="input" placeholder="…or paste a lesson list / backup here" value="{{ importPaste }}" onChange="{{ setImportPaste }}" style="border-radius:var(--radius-lg);min-height:74px;padding:12px 14px;font-size:12.5px;line-height:1.5;background:var(--color-bg)"></textarea>
 <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
@@ -951,6 +1015,13 @@ Photograph the lesson plan
 
 </div>
 
+<sc-if value="{{ hasSaveFail }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;background:var(--color-accent-700);color:#fff;padding:11px 16px;font-size:12.5px;line-height:1.45;display:flex;align-items:center;gap:11px">
+<span style="flex:1">{{ saveFail }}</span>
+<button onClick="{{ exportData }}" style="flex:none;border:none;cursor:pointer;border-radius:999px;padding:8px 13px;background:#fff;color:var(--color-accent-800);font-size:12px;font-family:var(--font-heading)">Export</button>
+</div>
+</sc-if>
+
 <div class="rr-tabs" style="display:flex;padding:7px 8px calc(env(safe-area-inset-bottom) + 10px);background:var(--color-surface);border-top:1px solid var(--color-divider);box-shadow:0 -6px 18px rgba(32,30,29,.06);z-index:5">
 <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
 <button onClick="{{ t.pick }}" style="{{ t.style }}">
@@ -968,6 +1039,7 @@ Photograph the lesson plan
 const KEY = 'rootrise.data.v1';
 const PKEY = 'rootrise.photos.v1';
 const RKEY = 'rootrise.timer.v1';
+const BKEY = 'rootrise.snapshots.v1';
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const QS = [
@@ -1107,18 +1179,34 @@ class Component extends DCLogic {
     secs: 0, running: false, timerKey: null, startedAt: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
     bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
     ideaWhen: 'anytime', ideaSid: '',
-    tocUrl: null, ocr: '',
+    tocUrl: null, ocr: '', recover: null, saveFail: '',
   };
 
   componentDidMount() {
-    let d;
-    try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
-    if (!d || !d.subjects) d = seed(key(new Date()));
+    // Read, then decide. The old code seeded fresh data the moment a read came
+    // back empty or unparseable — and the very next save wrote that seed over
+    // the real thing. Now a failed read locks writing and asks first.
+    let raw = null, d = null, recover = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (raw) { try { d = JSON.parse(raw); } catch (e) { d = null; } }
+    if (d && !d.subjects) d = null;
+    // Snapshot the good bytes we just read, before anything can touch them —
+    // otherwise the net is empty until her first edit of the session.
+    if (d) this.snap(raw);
+    if (!d) {
+      const snaps = this.snapshots();
+      if ((raw && raw.length > 2) || snaps.length) {
+        recover = { raw: raw || '', hasRaw: !!(raw && raw.length > 2) };
+        this._locked = true; // nothing may be written until she chooses
+      }
+      d = seed(key(new Date()));
+    }
     let photos = [];
     try { photos = JSON.parse(localStorage.getItem(PKEY)) || []; } catch (e) { photos = []; }
     const today = new Date();
     const ws = addDays(today, -((today.getDay() + 6) % 7));
-    this.setState({ d, photos, weekStart: key(ws), selDate: key(today), month: monKey(today) }, () => this.ensure(key(today)));
+    this.setState({ d, photos, recover, weekStart: key(ws), selDate: key(today), month: monKey(today) },
+      () => { if (!recover) this.ensure(key(today)); });
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
@@ -1162,7 +1250,63 @@ class Component extends DCLogic {
     this.setState({ secs: 0, running: false, startedAt: null });
   }
 
-  save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+  // ── saving, with a safety net ────────────────────────────────────
+  snapshots() {
+    let s = [];
+    try { s = JSON.parse(localStorage.getItem(BKEY)) || []; } catch (e) { s = []; }
+    return Array.isArray(s) ? s.filter(x => x && x.txt && x.day) : [];
+  }
+  // One snapshot per day, kept five days back, written at most every ten
+  // minutes so ordinary tapping doesn't thrash storage.
+  snap(txt) {
+    if (txt.length > 400000) return;
+    const now = Date.now();
+    if (this._snapAt && now - this._snapAt < 600000) return;
+    try {
+      const day = key(new Date());
+      const snaps = this.snapshots().filter(s => s.day !== day);
+      snaps.push({ day, at: now, txt });
+      localStorage.setItem(BKEY, JSON.stringify(snaps.slice(-5)));
+      this._snapAt = now;
+    } catch (e) { /* best effort — a snapshot must never break a save */ }
+  }
+  summarize(txt) {
+    try {
+      const j = JSON.parse(txt);
+      const data = j && j.log ? j : (j && j.data ? j.data : null);
+      if (!data || !data.log) return null;
+      let days = 0, lessons = 0, secs = 0;
+      Object.keys(data.log).forEach(k => {
+        const arr = data.log[k] || [];
+        const did = arr.filter(e => e.status === 'done' || e.status === 'partial');
+        if (did.length) days++;
+        lessons += did.length;
+        arr.forEach(e => { secs += e.secs || 0; });
+      });
+      return { days, lessons, hours: (secs / 3600).toFixed(1) };
+    } catch (e) { return null; }
+  }
+  restoreFrom(txt) {
+    let j = null;
+    try { j = JSON.parse(txt); } catch (e) { return; }
+    const data = j && j.log ? j : (j && j.data ? j.data : null);
+    if (!data || !data.subjects) return;
+    this._locked = false;
+    this.save(data);
+    this.setState({ d: data, recover: null, screen: 'today', stack: [] }, () => this.ensure(key(new Date())));
+  }
+  save(d) {
+    if (this._locked) return; // a recovery decision is pending — write nothing
+    const txt = JSON.stringify(d);
+    try {
+      localStorage.setItem(KEY, txt);
+      this.snap(txt);
+      if (this.state.saveFail) this.setState({ saveFail: '' });
+    } catch (e) {
+      // Silence here is how work disappears. Say it out loud instead.
+      this.setState({ saveFail: "This iPhone's storage is full, so that wasn't saved. Export a backup now, then delete a few photos from the Album." });
+    }
+  }
   mutate(fn, cb) {
     const d = JSON.parse(JSON.stringify(this.state.d));
     fn(d);
@@ -1171,7 +1315,14 @@ class Component extends DCLogic {
   }
   savePhotos(photos) {
     this.setState({ photos });
-    try { localStorage.setItem(PKEY, JSON.stringify(photos)); } catch (e) {}
+    try {
+      localStorage.setItem(PKEY, JSON.stringify(photos));
+      if (this.state.saveFail) this.setState({ saveFail: '' });
+    } catch (e) {
+      // Photos are the quota hog; a silent failure here loses the photo on the
+      // next launch with nothing said.
+      this.setState({ saveFail: "That photo didn't save — this iPhone's storage is full. Export a backup, then delete a few older photos." });
+    }
   }
 
   // ── the queue model ──────────────────────────────────────────────
@@ -1447,6 +1598,7 @@ class Component extends DCLogic {
   // Accepts either a full backup ({data, photos}) or an additive patch
   // ({curriculum, books, activities, materials, subjects}) written by hand.
   applyImport(text) {
+    this._locked = false; // importing IS the recovery decision
     const say = (m) => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { imp: m }) }));
     let j;
     try { j = JSON.parse(text); } catch (e) { say("That isn't valid JSON — check for a stray comma."); return; }
@@ -2038,7 +2190,7 @@ class Component extends DCLogic {
         text: n.text, subject: whenLabel(n.when), dot: dot('var(--color-neutral-400)', 8) })),
       rIdeasEmpty: !this.ideas().some(n => (n.done ? (n.doneDate || n.date) : n.date).slice(0, 7) === mk),
       goIdeas: () => this.setState(s => ({ screen: 'ideas', stack: s.stack.concat([s.screen]) })),
-      ideaCta: openIdeas.length ? 'Keep the idea · ' + openIdeas.length + ' waiting' : 'Keep the idea for later',
+      ideaCta: (openIdeas && openIdeas.length) ? 'Keep the idea · ' + openIdeas.length + ' waiting' : 'Keep the idea for later',
 
       goCheckin: () => this.setState(s => ({ screen: 'checkin', q: 0, stack: s.stack.concat([s.screen]) })),
       copyLabel: st.copied ? 'Copied ✓' : 'Copy summary',
@@ -2203,6 +2355,34 @@ class Component extends DCLogic {
         a.href = URL.createObjectURL(blob); a.download = 'root-and-rise-backup-' + tKey + '.json';
         a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       },
+      // ── recovery
+      isRecover: !!st.recover,
+      recoverHasRaw: !!(st.recover && st.recover.hasRaw),
+      snapList: this.snapshots().slice().reverse().map(s => {
+        const sm = this.summarize(s.txt) || {};
+        const sdt = parse(s.day);
+        return {
+          when: DOW[sdt.getDay()] + ' ' + MON[sdt.getMonth()].slice(0, 3) + ' ' + sdt.getDate(),
+          detail: (sm.days || 0) + (sm.days === 1 ? ' school day · ' : ' school days · ') + (sm.lessons || 0) + (sm.lessons === 1 ? ' lesson · ' : ' lessons · ') + (sm.hours || '0.0') + ' h',
+          restore: () => this.restoreFrom(s.txt),
+        };
+      }),
+      hasSnaps: !!this.snapshots().length,
+      noSnaps: !this.snapshots().length,
+      startFresh: () => {
+        const fresh = seed(tKey);
+        this._locked = false;
+        this.save(fresh);
+        this.setState({ d: fresh, recover: null, screen: 'today', stack: [] }, () => this.ensure(tKey));
+      },
+      downloadRaw: () => {
+        const blob = new Blob([(st.recover && st.recover.raw) || ''], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'root-and-rise-unreadable-' + tKey + '.txt';
+        a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      },
+      saveFail: st.saveFail, hasSaveFail: !!st.saveFail,
+
       resetLabel: st.resetArmed ? 'Tap again to erase everything' : 'Start fresh',
       resetData: () => {
         if (!st.resetArmed) { this.setState({ resetArmed: true }); setTimeout(() => this.setState({ resetArmed: false }), 4000); return; }
