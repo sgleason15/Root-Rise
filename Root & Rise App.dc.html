@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="_ds/organic-8dc64fb3-8d40-402b-82f6-213ec1b5a0da/styles.css">
 <link rel="stylesheet" href="ds.css">
 <script src="_ds/organic-8dc64fb3-8d40-402b-82f6-213ec1b5a0da/_ds_bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 html,body{height:100%;background:var(--color-bg);overscroll-behavior:none;-webkit-text-size-adjust:100%}
 input,textarea,button,select{font-family:var(--font-body)}
@@ -59,6 +60,21 @@ a:hover{color:var(--color-accent-600)}
 
 <sc-if value="{{ noSnaps }}" hint-placeholder-val="{{ false }}">
 <div style="background:var(--color-accent-200);border-radius:var(--radius-lg);padding:15px 16px;font-size:13px;line-height:1.55;color:var(--color-accent-900)">There are no snapshots yet — this version is the first to keep them. If you exported a backup file before, load it below and you'll be whole again.</div>
+</sc-if>
+
+<sc-if value="{{ cloudSignedOut }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
+<div style="font-family:var(--font-heading);font-size:15px;margin-bottom:4px">Restore from the cloud</div>
+<div style="font-size:12px;line-height:1.5;color:var(--color-neutral-700);margin-bottom:11px">If you had cloud backup on, sign in and your records come straight back.</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<input class="input" type="email" autoComplete="username" placeholder="you@example.com" value="{{ cEmail }}" onChange="{{ setCEmail }}" style="border-radius:999px;font-size:13.5px">
+<input class="input" type="password" autoComplete="current-password" placeholder="Password" value="{{ cPw }}" onChange="{{ setCPw }}" style="border-radius:999px;font-size:13.5px">
+<button onClick="{{ cloudSignIn }}" class="btn btn-primary" style="border-radius:999px;font-size:13px">Sign in and restore</button>
+</div>
+<sc-if value="{{ hasCloudErr }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;line-height:1.5;color:var(--color-accent-800);margin-top:9px">{{ cloudErr }}</div>
+</sc-if>
+</div>
 </sc-if>
 
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px">
@@ -958,6 +974,60 @@ Photograph the lesson plan
 </div>
 
 <div>
+<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Cloud backup</div>
+<div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;margin-bottom:18px">
+
+<sc-if value="{{ cloudSignedIn }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:flex;align-items:center;gap:9px">
+<span style="{{ cloudDotStyle }}"></span>
+<span style="flex:1;min-width:0;font-size:13.5px;color:var(--color-text)">{{ cloudLine }}</span>
+</div>
+<div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:5px">Signed in as {{ cloudEmail }}. Every change saves here automatically.</div>
+<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+<button onClick="{{ cloudPushNow }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Back up now</button>
+<button onClick="{{ cloudOut }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">Sign out</button>
+</div>
+</div>
+
+<sc-if value="{{ hasConflict }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:14px;border-top:1px solid var(--color-neutral-300);padding-top:13px">
+<div style="font-family:var(--font-heading);font-size:15px;margin-bottom:4px">Two copies don't match</div>
+<div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">{{ conflictNote }}</div>
+<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+<button onClick="{{ keepPhone }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px">Keep this phone's</button>
+<button onClick="{{ keepCloud }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Use the cloud copy</button>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ cloudSignedOut }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">Sign in and your records save to the cloud as well as this phone. Lose the phone, sign in on a new one, and everything's there.</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+<input class="input" type="email" autoComplete="username" placeholder="you@example.com" value="{{ cEmail }}" onChange="{{ setCEmail }}" style="border-radius:999px;font-size:13.5px">
+<input class="input" type="password" autoComplete="current-password" placeholder="Password" value="{{ cPw }}" onChange="{{ setCPw }}" style="border-radius:999px;font-size:13.5px">
+<div style="display:flex;gap:7px">
+<button onClick="{{ cloudSignIn }}" class="btn btn-primary" style="border-radius:999px;font-size:12.5px;flex:1">Sign in</button>
+<button onClick="{{ cloudSignUp }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;flex:1">Create account</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ cloudConnecting }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700)">Connecting…</div>
+</sc-if>
+<sc-if value="{{ cloudOffline }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12.5px;line-height:1.55;color:var(--color-neutral-700)">Cloud backup couldn't load — you're likely offline. Everything still saves to this phone, and it'll connect on its own next time you have signal.</div>
+</sc-if>
+
+<sc-if value="{{ hasCloudErr }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;line-height:1.5;color:var(--color-accent-800);margin-top:10px">{{ cloudErr }}</div>
+</sc-if>
+</div>
+
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">Month-end reminder</div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">This device</div>
@@ -1015,6 +1085,13 @@ Photograph the lesson plan
 
 </div>
 
+<sc-if value="{{ hasCloudBar }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;background:var(--color-accent-700);color:#fff;padding:11px 16px;font-size:12.5px;line-height:1.45;display:flex;align-items:center;gap:11px">
+<span style="flex:1">Cloud backup is paused — the phone and cloud copies don't match.</span>
+<button onClick="{{ goFixCloud }}" style="flex:none;border:none;cursor:pointer;border-radius:999px;padding:8px 13px;background:#fff;color:var(--color-accent-800);font-size:12px;font-family:var(--font-heading)">Sort it out</button>
+</div>
+</sc-if>
+
 <sc-if value="{{ hasSaveFail }}" hint-placeholder-val="{{ false }}">
 <div style="flex:none;background:var(--color-accent-700);color:#fff;padding:11px 16px;font-size:12.5px;line-height:1.45;display:flex;align-items:center;gap:11px">
 <span style="flex:1">{{ saveFail }}</span>
@@ -1040,6 +1117,24 @@ const KEY = 'rootrise.data.v1';
 const PKEY = 'rootrise.photos.v1';
 const RKEY = 'rootrise.timer.v1';
 const BKEY = 'rootrise.snapshots.v1';
+const SB_URL = 'https://vceroojgbdytrlqyvheu.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZXJvb2pnYmR5dHJscXl2aGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDc0NTYsImV4cCI6MjEwNDc4MzQ1Nn0.Y9G0ko-N6FBeaYIqCu46jztaFY2L3JPpKSet1aV_NmU';
+// How many logged lessons a copy holds — used to compare phone against cloud.
+const weight = (data) => {
+  if (!data || !data.log) return 0;
+  let n = 0;
+  Object.keys(data.log).forEach(k => { n += (data.log[k] || []).filter(e => e.status === 'done' || e.status === 'partial').length; });
+  return n;
+};
+const agoText = (ms) => {
+  if (!ms) return '';
+  const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  if (s < 60) return 'just now';
+  if (s < 3600) { const m = Math.round(s / 60); return m + (m === 1 ? ' minute ago' : ' minutes ago'); }
+  if (s < 86400) { const h = Math.round(s / 3600); return h + (h === 1 ? ' hour ago' : ' hours ago'); }
+  const dys = Math.round(s / 86400);
+  return dys + (dys === 1 ? ' day ago' : ' days ago');
+};
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const QS = [
@@ -1180,6 +1275,7 @@ class Component extends DCLogic {
     bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
     ideaWhen: 'anytime', ideaSid: '',
     tocUrl: null, ocr: '', recover: null, saveFail: '',
+    cloud: { ready: false, email: '', state: 'off', at: 0, err: '', busy: false, choice: null, libGone: false },
   };
 
   componentDidMount() {
@@ -1224,16 +1320,140 @@ class Component extends DCLogic {
         this.saveRun(null); // left overnight — don't log a phantom 14 hours
       }
     }
-    this._wake = () => this.syncTimer();
+    this._wake = () => {
+      this.syncTimer();
+      if (!this._sb) this.cloudInit(); else this.cloudFlush();
+    };
     document.addEventListener('visibilitychange', this._wake);
     window.addEventListener('focus', this._wake);
+    window.addEventListener('online', this._wake);
+    this.cloudInit();
+  }
+
+  // ── cloud backup ─────────────────────────────────────────────────
+  // The phone stays the source of truth; the server is the copy. Every local
+  // save queues a push, and a failed push just stays queued.
+  cloudSet(patch) { this.setState(s => ({ cloud: Object.assign({}, s.cloud, patch) })); }
+  // The library loads async from a CDN, so it is often not there yet at mount.
+  // Keep looking for a while instead of deciding once and staying off.
+  async cloudInit(attempt) {
+    if (!location.protocol.startsWith('http') || this._sb) return;
+    if (!window.supabase) {
+      const n = attempt || 0;
+      if (n < 14) this._libT = setTimeout(() => this.cloudInit(n + 1), n < 5 ? 400 : 1500);
+      else this.cloudSet({ libGone: true });
+      return;
+    }
+    try {
+      this._sb = window.supabase.createClient(SB_URL, SB_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true },
+      });
+      const { data } = await this._sb.auth.getSession();
+      this.cloudSet({ ready: true });
+      if (data && data.session) this.onSignedIn(data.session.user.email);
+      this._sb.auth.onAuthStateChange((ev, sess) => {
+        if (ev === 'SIGNED_OUT') this.cloudSet({ email: '', state: 'off', at: 0 });
+        else if (sess && sess.user && !this.state.cloud.email) this.onSignedIn(sess.user.email);
+      });
+    } catch (e) { /* offline or blocked — the app is fully usable without it */ }
+  }
+  async onSignedIn(email) {
+    this.cloudSet({ email: email, state: 'checking', err: '' });
+    let remote = null;
+    try {
+      const { data, error } = await this._sb.from('records').select('data,updated_at').maybeSingle();
+      if (error) throw error;
+      remote = data;
+    } catch (e) {
+      this.cloudSet({ state: 'error', err: 'Could not reach the cloud just now. Your phone copy is safe; it will try again.' });
+      return;
+    }
+    const local = this.state.d;
+    const rw = remote && remote.data ? weight(remote.data) : -1;
+    const lw = weight(local);
+    if (rw < 0) { this.cloudSet({ state: 'idle' }); this.cloudPush(true); return; } // nothing up there yet
+    if (this.state.recover) { this.cloudRestore(remote.data); return; }             // came in to recover
+    if (rw === lw) { this.cloudSet({ state: 'ok', at: Date.parse(remote.updated_at) || Date.now() }); return; }
+    if (lw === 0 && rw > 0) { this.cloudRestore(remote.data); return; }             // fresh phone
+    // Both hold work and they disagree — never silently pick. Ask.
+    this.cloudSet({
+      state: 'conflict',
+      choice: { remote: remote.data, rLessons: rw, lLessons: lw, rWhen: agoText(Date.parse(remote.updated_at)) },
+    });
+  }
+  cloudRestore(data) {
+    if (!data || !data.subjects) return;
+    this._locked = false;
+    this.save(data);
+    this.setState({ d: data, recover: null, screen: 'today', stack: [] }, () => {
+      this.ensure(key(new Date()));
+      this.cloudSet({ state: 'ok', at: Date.now(), choice: null });
+    });
+  }
+  cloudQueue() {
+    if (!this._sb || !this.state.cloud.email) return;
+    clearTimeout(this._push);
+    this.cloudSet({ state: 'saving' });
+    this._push = setTimeout(() => this.cloudPush(), 1500);
+  }
+  cloudFlush() { if (this._dirty) this.cloudPush(); }
+  async cloudPush(quiet) {
+    if (!this._sb || !this.state.cloud.email || this.state.cloud.state === 'conflict') return;
+    this._dirty = true;
+    if (!quiet) this.cloudSet({ state: 'saving' });
+    try {
+      const { data: u } = await this._sb.auth.getUser();
+      if (!u || !u.user) throw new Error('no session');
+      const { error } = await this._sb.from('records')
+        .upsert({ user_id: u.user.id, data: this.state.d, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (error) throw error;
+      this._dirty = false;
+      this.cloudSet({ state: 'ok', at: Date.now(), err: '' });
+    } catch (e) {
+      // Stays dirty; the next focus, save or reconnect retries.
+      this.cloudSet({ state: 'pending', err: '' });
+    }
+  }
+  async cloudAuth(mode) {
+    const email = (this.state.drafts['cemail'] || '').trim();
+    const pw = this.state.drafts['cpw'] || '';
+    if (!email || pw.length < 6) {
+      this.cloudSet({ err: 'Enter your email and a password of at least 6 characters.' });
+      return;
+    }
+    this.cloudSet({ busy: true, err: '' });
+    try {
+      const fn = mode === 'up' ? 'signUp' : 'signInWithPassword';
+      const { data, error } = await this._sb.auth[fn]({ email, password: pw });
+      if (error) throw error;
+      this.setState(s => { const dr = Object.assign({}, s.drafts); delete dr['cpw']; return { drafts: dr }; });
+      this.cloudSet({ busy: false });
+      if (data && data.user && !data.session) {
+        this.cloudSet({ err: 'Check your email for a confirmation link, then sign in.' });
+      }
+    } catch (e) {
+      const m = String((e && e.message) || '');
+      this.cloudSet({
+        busy: false,
+        err: /already registered/i.test(m) ? 'That email already has an account — use Sign in.'
+          : /invalid login/i.test(m) ? "That email and password don't match."
+          : m || 'Something went wrong.',
+      });
+    }
+  }
+  async cloudOut() {
+    try { await this._sb.auth.signOut(); } catch (e) {}
+    this.cloudSet({ email: '', state: 'off', at: 0, err: '', choice: null });
   }
 
   componentWillUnmount() {
     clearInterval(this._t);
     clearTimeout(this._arm);
+    clearTimeout(this._libT);
+    clearTimeout(this._push);
     document.removeEventListener('visibilitychange', this._wake);
     window.removeEventListener('focus', this._wake);
+    window.removeEventListener('online', this._wake);
   }
 
   // ── timer, measured against the wall clock rather than counted in ticks
@@ -1301,6 +1521,7 @@ class Component extends DCLogic {
     try {
       localStorage.setItem(KEY, txt);
       this.snap(txt);
+      this.cloudQueue();
       if (this.state.saveFail) this.setState({ saveFail: '' });
     } catch (e) {
       // Silence here is how work disappears. Say it out loud instead.
@@ -2337,6 +2558,45 @@ class Component extends DCLogic {
           () => this.setState(s => ({ drafts: Object.assign({}, s.drafts, { cp: '', cn: '', curDone: items.length + ' lessons loaded' }) }), () => this.ensure(tKey)));
       },
       remindNote: 'The app nudges you on the Today screen in the last five days of the month, and keeps nudging until you mark the month complete. For an actual buzz on your phone, open the iPhone Reminders app once: new reminder “Root & Rise — report + backup”, date the 28th, Repeat → Monthly.',
+      // ── cloud backup
+      cloudReady: !!st.cloud.ready,
+      cloudConnecting: !st.cloud.ready && !st.cloud.libGone,
+      cloudOffline: !st.cloud.ready && !!st.cloud.libGone,
+      // A paused backup must be visible from wherever she's working.
+      hasCloudBar: st.cloud.state === 'conflict' && st.screen !== 'setup',
+      goFixCloud: () => this.setState(s => ({ screen: 'setup', stack: s.stack.concat([s.screen]) })),
+      cloudSignedIn: !!st.cloud.email,
+      cloudSignedOut: st.cloud.ready && !st.cloud.email,
+      cloudEmail: st.cloud.email,
+      cloudBusy: !!st.cloud.busy,
+      cloudErr: st.cloud.err, hasCloudErr: !!st.cloud.err,
+      cloudLine: st.cloud.state === 'ok' ? 'Backed up ' + (agoText(st.cloud.at) || 'just now')
+        : st.cloud.state === 'saving' ? 'Backing up…'
+        : st.cloud.state === 'pending' ? 'Waiting for a connection — it will finish on its own'
+        : st.cloud.state === 'checking' ? 'Checking the cloud…'
+        : st.cloud.state === 'error' ? 'Could not reach the cloud'
+        : st.cloud.state === 'conflict' ? 'Needs your decision below'
+        : 'Not backed up yet',
+      cloudDotStyle: {
+        width: 9, height: 9, borderRadius: 999, flex: 'none',
+        background: st.cloud.state === 'ok' ? 'var(--color-accent-2)'
+          : st.cloud.state === 'error' || st.cloud.state === 'conflict' ? 'var(--color-accent)'
+          : 'var(--color-neutral-400)',
+      },
+      cEmail: draft('cemail'), setCEmail: setDraft('cemail'),
+      cPw: draft('cpw'), setCPw: setDraft('cpw'),
+      cloudSignIn: () => this.cloudAuth('in'),
+      cloudSignUp: () => this.cloudAuth('up'),
+      cloudOut: () => this.cloudOut(),
+      cloudPushNow: () => this.cloudPush(),
+      hasConflict: !!st.cloud.choice,
+      conflictNote: st.cloud.choice
+        ? 'This phone holds ' + st.cloud.choice.lLessons + (st.cloud.choice.lLessons === 1 ? ' logged lesson' : ' logged lessons')
+          + ', and the cloud copy — saved ' + st.cloud.choice.rWhen + ' — holds ' + st.cloud.choice.rLessons + '. Keep whichever is right; the other is replaced.'
+        : '',
+      keepPhone: () => { this.cloudSet({ state: 'idle', choice: null }); this.cloudPush(); },
+      keepCloud: () => { const c = st.cloud.choice; if (c) this.cloudRestore(c.remote); },
+
       storageNote: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net, and Import loads one back (or loads a lesson list someone sent you).',
       importPaste: draft('ip'), setImportPaste: setDraft('ip'),
       importStatus: st.drafts.imp || '',
