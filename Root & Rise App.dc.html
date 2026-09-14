@@ -1071,7 +1071,7 @@ Photograph the lesson plan
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);flex:1">This device</div>
-<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 14 · Sept 14</div>
+<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 15 · Sept 14</div>
 </div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
 {{ storageNote }}
@@ -1407,7 +1407,19 @@ class Component extends DCLogic {
       if (error) throw error;
       remote = data;
     } catch (e) {
-      this.cloudSet({ state: 'error', err: 'Could not reach the cloud just now. Your phone copy is safe; it will try again.' });
+      // Distinguish "the table isn't there" from "no signal" — they need
+      // completely different things from her.
+      const code = String((e && (e.code || e.hint)) || '');
+      const msg = String((e && e.message) || '');
+      const noTable = /PGRST205|42P01/.test(code) || /could not find the table|relation .* does not exist/i.test(msg);
+      const noPolicy = /42501/.test(code) || /row-level security/i.test(msg);
+      this.cloudSet({
+        state: 'error',
+        err: noTable ? "The cloud database isn't set up yet — the records table is missing. Run the setup SQL in Supabase, then tap Back up now."
+          : noPolicy ? 'The cloud rejected the request — the security policy is missing on the records table. Run the setup SQL in Supabase again.'
+          : navigator.onLine === false ? 'No connection right now. Your phone copy is safe; it will back up when you have signal.'
+          : 'Could not reach the cloud: ' + (msg || 'unknown error') + '. Your phone copy is safe.',
+      });
       return;
     }
     const local = this.state.d;
@@ -1452,8 +1464,15 @@ class Component extends DCLogic {
       this._dirty = false;
       this.cloudSet({ state: 'ok', at: Date.now(), err: '' });
     } catch (e) {
-      // Stays dirty; the next focus, save or reconnect retries.
-      this.cloudSet({ state: 'pending', err: '' });
+      // Stays dirty; the next focus, save or reconnect retries. A setup fault
+      // won't fix itself though, so say so rather than waiting forever.
+      const code = String((e && (e.code || e.hint)) || '');
+      const msg = String((e && e.message) || '');
+      if (/PGRST205|42P01|42501/.test(code) || /could not find the table|row-level security/i.test(msg)) {
+        this.cloudSet({ state: 'error', err: "The cloud database isn't set up yet — run the setup SQL in Supabase, then tap Back up now." });
+      } else {
+        this.cloudSet({ state: 'pending', err: '' });
+      }
     }
   }
   async cloudAuth(mode) {
