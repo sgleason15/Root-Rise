@@ -1024,7 +1024,7 @@ Photograph the lesson plan
 </div>
 <div style="font-size:11.5px;color:var(--color-neutral-700);margin-top:5px">Signed in as {{ cloudEmail }}. Every change saves here automatically.</div>
 <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
-<button onClick="{{ cloudPushNow }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">Back up now</button>
+<button onClick="{{ cloudPushNow }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px">{{ cloudActionLabel }}</button>
 <button onClick="{{ cloudOut }}" class="btn btn-secondary" style="border-radius:999px;font-size:12.5px;color:var(--color-accent-800)">Sign out</button>
 </div>
 </div>
@@ -1071,7 +1071,7 @@ Photograph the lesson plan
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);flex:1">This device</div>
-<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 15 · Sept 14</div>
+<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 17 · Sept 14</div>
 </div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
 {{ storageNote }}
@@ -1317,7 +1317,7 @@ class Component extends DCLogic {
     bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
     ideaWhen: 'anytime', ideaSid: '', pickFor: null, armRemove: null,
     tocUrl: null, ocr: '', recover: null, saveFail: '',
-    cloud: { ready: false, email: '', state: 'off', at: 0, err: '', busy: false, choice: null, libGone: false },
+    cloud: { ready: false, email: '', state: 'off', at: 0, err: '', busy: false, choice: null, libGone: false, cause: '' },
   };
 
   componentDidMount() {
@@ -1346,7 +1346,22 @@ class Component extends DCLogic {
     this.setState({ d, photos, recover, weekStart: key(ws), selDate: key(today), month: monKey(today) },
       () => { if (!recover) this.ensure(key(today)); });
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      // Check for a newer deploy on every launch, and when one activates,
+      // reload once so she isn't stuck on an old build without knowing it.
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.update().catch(() => {});
+        const waiting = () => { if (reg.waiting) reg.waiting.postMessage('skip-waiting'); };
+        waiting();
+        reg.addEventListener('updatefound', () => {
+          const w = reg.installing;
+          if (w) w.addEventListener('statechange', () => { if (w.state === 'installed') waiting(); });
+        });
+      }).catch(() => {});
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (this._reloaded) return;
+        this._reloaded = true;
+        location.reload();
+      });
     }
 
     // A timer left running survives leaving the app: we recorded the moment it
@@ -1413,12 +1428,14 @@ class Component extends DCLogic {
       const msg = String((e && e.message) || '');
       const noTable = /PGRST205|42P01/.test(code) || /could not find the table|relation .* does not exist/i.test(msg);
       const noPolicy = /42501/.test(code) || /row-level security/i.test(msg);
+      const offline = navigator.onLine === false;
       this.cloudSet({
         state: 'error',
-        err: noTable ? "The cloud database isn't set up yet — the records table is missing. Run the setup SQL in Supabase, then tap Back up now."
-          : noPolicy ? 'The cloud rejected the request — the security policy is missing on the records table. Run the setup SQL in Supabase again.'
-          : navigator.onLine === false ? 'No connection right now. Your phone copy is safe; it will back up when you have signal.'
-          : 'Could not reach the cloud: ' + (msg || 'unknown error') + '. Your phone copy is safe.',
+        cause: (noTable || noPolicy) ? 'setup' : offline ? 'offline' : 'unknown',
+        err: noTable ? "The records table is missing in Supabase. Run the setup SQL there, then tap Try again."
+          : noPolicy ? 'The security policy is missing on the records table. Run the setup SQL in Supabase again, then tap Try again.'
+          : offline ? 'Your phone copy is safe; it will back up when you have signal.'
+          : 'Supabase said: ' + (msg || 'unknown error') + '. Your phone copy is safe.',
       });
       return;
     }
@@ -1462,14 +1479,14 @@ class Component extends DCLogic {
         .upsert({ user_id: u.user.id, data: this.state.d, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
       if (error) throw error;
       this._dirty = false;
-      this.cloudSet({ state: 'ok', at: Date.now(), err: '' });
+      this.cloudSet({ state: 'ok', at: Date.now(), err: '', cause: '' });
     } catch (e) {
       // Stays dirty; the next focus, save or reconnect retries. A setup fault
       // won't fix itself though, so say so rather than waiting forever.
       const code = String((e && (e.code || e.hint)) || '');
       const msg = String((e && e.message) || '');
       if (/PGRST205|42P01|42501/.test(code) || /could not find the table|row-level security/i.test(msg)) {
-        this.cloudSet({ state: 'error', err: "The cloud database isn't set up yet — run the setup SQL in Supabase, then tap Back up now." });
+        this.cloudSet({ state: 'error', cause: 'setup', err: "Run the setup SQL in Supabase, then tap Try again." });
       } else {
         this.cloudSet({ state: 'pending', err: '' });
       }
@@ -2750,7 +2767,8 @@ class Component extends DCLogic {
         : st.cloud.state === 'saving' ? 'Backing up…'
         : st.cloud.state === 'pending' ? 'Waiting for a connection — it will finish on its own'
         : st.cloud.state === 'checking' ? 'Checking the cloud…'
-        : st.cloud.state === 'error' ? 'Could not reach the cloud'
+        : st.cloud.state === 'error' ? (st.cloud.cause === 'setup' ? "Supabase setup isn't finished"
+            : st.cloud.cause === 'offline' ? 'No connection right now' : 'Could not reach the cloud')
         : st.cloud.state === 'conflict' ? 'Needs your decision below'
         : 'Not backed up yet',
       cloudDotStyle: {
@@ -2764,7 +2782,10 @@ class Component extends DCLogic {
       cloudSignIn: () => this.cloudAuth('in'),
       cloudSignUp: () => this.cloudAuth('up'),
       cloudOut: () => this.cloudOut(),
-      cloudPushNow: () => this.cloudPush(),
+      // On an error, re-check the cloud rather than pushing blind — a push
+      // would skip the copy comparison and could clobber a good cloud copy.
+      cloudActionLabel: st.cloud.state === 'error' ? 'Try again' : 'Back up now',
+      cloudPushNow: () => { if (st.cloud.state === 'error') this.onSignedIn(st.cloud.email); else this.cloudPush(); },
       hasConflict: !!st.cloud.choice,
       conflictNote: st.cloud.choice
         ? 'This phone holds ' + st.cloud.choice.lLessons + (st.cloud.choice.lLessons === 1 ? ' logged lesson' : ' logged lessons')
