@@ -44,9 +44,22 @@ self.addEventListener('message', (ev) => {
 const isDoc = (req, url) =>
   req.mode === 'navigate' || /\.(html|dc\.html)$/.test(url.pathname) || url.pathname.endsWith('/');
 
-// A captive portal answers 200 with its own login page. Caching that would
-// brick the home-screen app, so a document only counts if it came back from
-// this origin, unredirected, as HTML.
+// A captive portal answers 200 with its own login page for EVERY url —
+// including support.js. Caching that would brick the home-screen app, so
+// nothing is stored unless its provenance and shape both check out.
+const OK_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net'];
+
+const safeToCache = (req, res) => {
+  if (!res || !res.ok || res.redirected || res.type === 'opaque') return false;
+  let origin, host;
+  try { const u = new URL(res.url); origin = u.origin; host = u.hostname; } catch (e) { return false; }
+  if (origin !== location.origin && OK_HOSTS.indexOf(host) < 0) return false;
+  const ct = res.headers.get('content-type') || '';
+  // Code and data must never be HTML — this is the clause that catches portals.
+  if (/\.(js|jsx|css|json|webmanifest)$/.test(new URL(req.url).pathname) && /text\/html/i.test(ct)) return false;
+  return true;
+};
+
 const looksLikeOurApp = (res) => {
   if (!res || !res.ok || res.redirected || res.type === 'opaque') return false;
   try { if (new URL(res.url).origin !== location.origin) return false; } catch (e) { return false; }
@@ -101,13 +114,19 @@ self.addEventListener('fetch', (ev) => {
     return;
   }
 
-  // Everything else: serve the cached copy at once, refresh it behind the scenes.
+  // Everything else: serve the cached copy at once, refresh it behind the
+  // scenes — but only store a response that passes the provenance test.
   ev.respondWith(
     caches.match(req).then(hit => {
       const net = fetch(req)
         .then(res => {
-          if (res && res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
-          return res;
+          if (safeToCache(req, res)) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copy));
+            return res;
+          }
+          // Junk from a portal: prefer whatever we already trust.
+          return hit || res;
         })
         .catch(() => hit);
       return hit || net;
