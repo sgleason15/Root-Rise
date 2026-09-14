@@ -1946,9 +1946,14 @@ class Component extends DCLogic {
         if (!s || !dd.cur[s.id]) return;
         const c = dd.cur[s.id];
         const ix = p.next ? c.items.findIndex(x => String(x).trim() === String(p.next).trim()) : -1;
-        if (ix >= 0) c.pos = ix;
-        else if (typeof p.pos === 'number') c.pos = Math.max(0, Math.min(c.items.length, p.pos));
-        done.push(s.name + ' set to ' + (c.items[c.pos] || 'finished'));
+        if (ix >= 0) { c.pos = ix; done.push(s.name + ' set to ' + c.items[ix]); }
+        else if (typeof p.pos === 'number') {
+          c.pos = Math.max(0, Math.min(c.items.length, p.pos));
+          done.push(s.name + ' set to ' + (c.items[c.pos] || 'finished'));
+        } else {
+          // Never claim a pointer moved when it didn't.
+          done.push("couldn't find “" + p.next + "” in " + s.name + "'s plan — set it on Progress");
+        }
       });
     }, () => this.ensure(tKey));
     say(done.length ? 'Loaded: ' + done.join(', ') + '.' : 'Nothing recognised in that file.');
