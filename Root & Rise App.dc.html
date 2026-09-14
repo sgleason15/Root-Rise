@@ -1071,7 +1071,7 @@ Photograph the lesson plan
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);flex:1">This device</div>
-<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 19 · Sept 14</div>
+<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 20 · Sept 14</div>
 </div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
 {{ storageNote }}
@@ -2805,7 +2805,10 @@ class Component extends DCLogic {
       keepPhone: () => { this.cloudSet({ state: 'idle', choice: null }); this.cloudPush(); },
       keepCloud: () => { const c = st.cloud.choice; if (c) this.cloudRestore(c.remote); },
 
-      storageNote: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net, and Import loads one back (or loads a lesson list someone sent you).',
+      storageNote: st.cloud.email
+        ? 'Your records live on this iPhone, with a snapshot kept automatically once a day for five days. Signed in to cloud backup, a copy also goes to your own Supabase account, so a lost phone is no longer a lost year. An exported file is still the one thing nothing can reach — worth doing now and then.'
+        : 'Your records live on this iPhone, with a snapshot kept automatically once a day for five days. Cloud backup is off, so nothing leaves the device — sign in above to copy it off the phone as well. Either way, export a backup now and then; that file is your safety net, and Load a backup file brings one back.',
+      storageNoteOld: 'Everything is saved on this iPhone — no account, no cloud, nothing leaves the device. Export a backup now and then; that file is your safety net, and Import loads one back (or loads a lesson list someone sent you).',
       importPaste: draft('ip'), setImportPaste: setDraft('ip'),
       importStatus: st.drafts.imp || '',
       importPasted: () => { const v = draft('ip').trim(); if (!v) return; this.applyImport(v); clearDraft('ip'); },
