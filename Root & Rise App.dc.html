@@ -304,7 +304,7 @@ a:hover{color:var(--color-accent-600)}
 <button onClick="{{ goIdeas }}" style="width:100%;text-align:left;cursor:pointer;border:1.5px dashed var(--color-accent-300);background:transparent;border-radius:var(--radius-lg);padding:13px 15px;display:flex;align-items:center;gap:10px" style-hover="background:var(--color-accent-100)">
 <span style="flex:1">
 <span style="display:block;font-size:13px;color:var(--color-text)">Something he asked about today?</span>
-<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:2px">{{ ideaCta }}</span>
+<span style="display:block;font-size:11.5px;color:var(--color-neutral-700);margin-top:2px">Keep the idea for later<sc-if value="{{ hasOpenIdeas }}" hint-placeholder-val="{{ false }}"> · {{ openIdeaCount }} waiting</sc-if></span>
 </span>
 <span style="font-size:17px;color:var(--color-accent-700)">›</span>
 </button>
@@ -353,7 +353,8 @@ a:hover{color:var(--color-accent-600)}
 
 <div style="display:flex;flex-direction:column;gap:6px">
 <sc-for list="{{ dayRows }}" as="p" hint-placeholder-count="3">
-<div style="background:var(--color-bg);border-radius:var(--radius-md);padding:10px 11px;display:flex;align-items:center;gap:9px">
+<div style="background:var(--color-bg);border-radius:var(--radius-md);padding:10px 11px">
+<div style="display:flex;align-items:center;gap:9px">
 <button onClick="{{ p.toggleDone }}" style="{{ p.box }}">{{ p.mark }}</button>
 <button onClick="{{ p.open }}" style="flex:1;min-width:0;text-align:left;border:none;background:transparent;cursor:pointer;padding:0;display:flex;align-items:center;gap:8px">
 <span style="{{ p.dot }}"></span>
@@ -364,7 +365,24 @@ a:hover{color:var(--color-accent-600)}
 </button>
 <input type="number" min="0" inputMode="numeric" placeholder="0" value="{{ p.mf.val }}" onChange="{{ p.mf.type }}" onBlur="{{ p.mf.commit }}" onKeyDown="{{ p.mf.keyDown }}" class="input" style="border-radius:999px;width:56px;text-align:center;font-size:14px;padding:7px 4px;background:var(--color-surface);flex:none">
 <span style="font-size:10.5px;color:var(--color-neutral-700);flex:none">min</span>
-<button onClick="{{ p.remove }}" style="border:none;background:transparent;cursor:pointer;color:var(--color-neutral-600);font-size:15px;padding:0 1px;flex:none">×</button>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+<button onClick="{{ p.remove }}" style="{{ p.removeStyle }}" style-hover="color:var(--color-accent-800)">{{ p.removeLabel }}</button>
+<button onClick="{{ p.togglePick }}" style="flex:1;text-align:right;border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--color-accent-700);padding:9px 2px;text-decoration:underline" style-hover="color:var(--color-accent-600)">change which lesson</button>
+</div>
+<sc-if value="{{ p.picking }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:6px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px" class="rr-scroll">
+<sc-for list="{{ p.pickItems }}" as="it" hint-placeholder-count="6">
+<button onClick="{{ it.pick }}" style="{{ it.style }}">
+<span style="{{ it.numStyle }}">{{ it.num }}</span>
+<span style="flex:1;min-width:0">{{ it.label }}</span>
+</button>
+</sc-for>
+<sc-if value="{{ p.noPickItems }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;color:var(--color-neutral-700);line-height:1.5;padding:4px 0">No lesson plan loaded for this subject — load one in Setup, or type the lesson name on the lesson screen.</div>
+</sc-if>
+</div>
+</sc-if>
 </div>
 </sc-for>
 <sc-if value="{{ noDayRows }}" hint-placeholder-val="{{ true }}">
@@ -1294,7 +1312,7 @@ class Component extends DCLogic {
     d: null, photos: [], screen: 'today', stack: [], lessonIdx: 0, lessonDate: null,
     secs: 0, running: false, timerKey: null, startedAt: null, expanded: null, weekStart: null, selDate: null, month: null, q: 0,
     bookTab: 'now', albumTab: 'photos', curPick: null, setPos: null, armPreset: null, drafts: {}, copied: false, resetArmed: false, matSid: '',
-    ideaWhen: 'anytime', ideaSid: '',
+    ideaWhen: 'anytime', ideaSid: '', pickFor: null, armRemove: null,
     tocUrl: null, ocr: '', recover: null, saveFail: '',
     cloud: { ready: false, email: '', state: 'off', at: 0, err: '', busy: false, choice: null, libGone: false },
   };
@@ -1578,6 +1596,7 @@ class Component extends DCLogic {
     if (!c || !c.items.length) return 'No lessons loaded';
     const e = (d.log[dateKey] || [])[idx];
     if (e && e.custom) return e.custom; // typed by hand — detached from the queue
+    if (e && e.pinned && e.ref) return e.ref; // she chose this one from the plan
     // a ref is history only once the lesson is finished or skipped; anything
     // still pending re-resolves (so entries planned under the old model heal)
     if (e && e.ref && (e.status === 'done' || e.status === 'skipped')) return e.ref;
@@ -1609,6 +1628,20 @@ class Component extends DCLogic {
   }
   removeEntry(dateKey, idx) {
     this.mutate(dd => { if (dd.log[dateKey]) dd.log[dateKey].splice(idx, 1); });
+  }
+  // Say which lesson an entry actually was, and move the queue to match.
+  pickLesson(dateKey, idx, ix) {
+    this.mutate(dd => {
+      const e = dd.log[dateKey] && dd.log[dateKey][idx];
+      if (!e) return;
+      const c = dd.cur[e.sid];
+      if (!c || !c.items[ix]) return;
+      e.ref = c.items[ix];
+      e.pinned = true;
+      delete e.custom;
+      const closed = e.status === 'done' || e.status === 'skipped';
+      c.pos = Math.min(c.items.length, closed ? ix + 1 : ix);
+    }, () => this.setState({ pickFor: null }));
   }
   // Recording something already taught: push it, work out which queue lesson it
   // lands on, then close it — so the queue advances exactly as it would have.
@@ -1885,6 +1918,38 @@ class Component extends DCLogic {
       if ((j.activities || []).length) done.push((j.activities || []).length + ' activities');
       (j.materials || []).forEach(m => { if (m.date && m.name) dd.mats.push({ id: uid(), date: m.date, name: m.name, have: !!m.have, src: m.src || 'you' }); });
       if ((j.materials || []).length) done.push((j.materials || []).length + ' materials');
+      // Logged school days, so a week can be re-entered in one go. Each lesson
+      // pins its own ref, and the queue is left where the file says it is.
+      let nLess = 0;
+      (j.days || []).forEach(day => {
+        if (!day || !day.date) return;
+        // `replace` makes a re-run safe: the day is rebuilt, not doubled up.
+        if (day.replace) { dd.log[day.date] = []; dd.acts = dd.acts.filter(a => a.date !== day.date); }
+        if (!dd.log[day.date]) dd.log[day.date] = [];
+        (day.lessons || []).forEach(L => {
+          const s = findSub(L.subject);
+          if (!s) return;
+          const st = L.status || 'done';
+          dd.log[day.date].push({
+            sid: s.id, status: st, secs: Math.max(0, Math.round((+L.mins || 0) * 60)),
+            before: L.before || '', after: L.after || '', tags: L.tags || [],
+            ref: L.ref || '', pinned: !!L.ref, custom: L.custom || undefined,
+          });
+          nLess++;
+        });
+        (day.activities || []).forEach(nm => { if (nm) dd.acts.push({ id: uid(), date: day.date, name: String(nm) }); });
+      });
+      if (nLess) done.push(nLess + (nLess === 1 ? ' logged lesson' : ' logged lessons'));
+      // Where each subject now sits in its plan.
+      (j.positions || []).forEach(p => {
+        const s = findSub(p.subject);
+        if (!s || !dd.cur[s.id]) return;
+        const c = dd.cur[s.id];
+        const ix = p.next ? c.items.findIndex(x => String(x).trim() === String(p.next).trim()) : -1;
+        if (ix >= 0) c.pos = ix;
+        else if (typeof p.pos === 'number') c.pos = Math.max(0, Math.min(c.items.length, p.pos));
+        done.push(s.name + ' set to ' + (c.items[c.pos] || 'finished'));
+      });
     }, () => this.ensure(tKey));
     say(done.length ? 'Loaded: ' + done.join(', ') + '.' : 'Nothing recognised in that file.');
   }
@@ -2294,7 +2359,34 @@ class Component extends DCLogic {
           mf: this.minsField(selK, i, e),
           toggleDone: () => this.setStatus(selK, i, 'done', this.resolveRef(this.state.d, e.sid, selK, i)),
           open: () => this.openLesson(selK, i),
-          remove: () => this.removeEntry(selK, i),
+          // Two taps to delete a logged lesson — there is no undo anywhere.
+          removeLabel: st.armRemove === selK + '#' + i ? 'tap again to remove' : 'remove',
+          removeStyle: { flex: 'none', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 11.5,
+            padding: '9px 8px', color: st.armRemove === selK + '#' + i ? 'var(--color-accent-800)' : 'var(--color-neutral-700)' },
+          remove: () => {
+            const tag = selK + '#' + i;
+            if (st.armRemove !== tag) {
+              this.setState({ armRemove: tag });
+              clearTimeout(this._rmT);
+              this._rmT = setTimeout(() => this.setState({ armRemove: null }), 4000);
+              return;
+            }
+            this.setState({ armRemove: null }, () => this.removeEntry(selK, i));
+          },
+          picking: st.pickFor === selK + '#' + i,
+          togglePick: () => this.setState(x => ({ pickFor: x.pickFor === selK + '#' + i ? null : selK + '#' + i })),
+          pickItems: st.pickFor === selK + '#' + i
+            ? ((d.cur[e.sid] || { items: [] }).items).map((it, ix) => ({
+                label: it, num: (ix + 1) + '.',
+                pick: () => this.pickLesson(selK, i, ix),
+                style: { width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 'var(--radius-md)',
+                  padding: '9px 11px', display: 'flex', gap: 9, alignItems: 'baseline', fontSize: 13,
+                  background: it === (e.custom || this.resolveRef(d, e.sid, selK, i)) ? s.color : 'var(--color-surface)',
+                  color: it === (e.custom || this.resolveRef(d, e.sid, selK, i)) ? '#fff' : 'var(--color-text)' },
+                numStyle: { fontSize: 10.5, opacity: 0.6, minWidth: 26, flex: 'none' },
+              }))
+            : [],
+          noPickItems: !((d.cur[e.sid] || { items: [] }).items.length),
         };
       }),
       noDayRows: !((d.log[selK] || []).length),
@@ -2467,7 +2559,8 @@ class Component extends DCLogic {
         text: n.text, subject: whenLabel(n.when), dot: dot('var(--color-neutral-400)', 8) })),
       rIdeasEmpty: !this.ideas().some(n => (n.done ? (n.doneDate || n.date) : n.date).slice(0, 7) === mk),
       goIdeas: () => this.setState(s => ({ screen: 'ideas', stack: s.stack.concat([s.screen]) })),
-      ideaCta: (openIdeas && openIdeas.length) ? 'Keep the idea · ' + openIdeas.length + ' waiting' : 'Keep the idea for later',
+      hasOpenIdeas: !!(openIdeas && openIdeas.length),
+      openIdeaCount: (openIdeas && openIdeas.length) || 0,
 
       goCheckin: () => this.setState(s => ({ screen: 'checkin', q: 0, stack: s.stack.concat([s.screen]) })),
       copyLabel: st.copied ? 'Copied ✓' : 'Copy summary',
