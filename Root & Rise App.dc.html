@@ -1071,7 +1071,7 @@ Photograph the lesson plan
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800);margin-bottom:18px">{{ remindNote }}</div>
 <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
 <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);flex:1">This device</div>
-<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 17 · Sept 14</div>
+<div style="font-size:11px;color:var(--color-accent-700);flex:none">Build 18 · Sept 14</div>
 </div>
 <div style="background:var(--color-surface);border-radius:var(--radius-lg);padding:15px 16px;font-size:12.5px;line-height:1.55;color:var(--color-neutral-800)">
 {{ storageNote }}
@@ -1357,11 +1357,19 @@ class Component extends DCLogic {
           if (w) w.addEventListener('statechange', () => { if (w.state === 'installed') waiting(); });
         });
       }).catch(() => {});
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (this._reloaded) return;
+      // A page that loaded uncontrolled (first install, or a re-added home
+      // screen icon) gets controllerchange straight away — that is not a new
+      // version, so don't reload for it.
+      const wasControlled = !!navigator.serviceWorker.controller;
+      this._onCtrl = () => {
+        if (!wasControlled || this._reloaded) return;
+        // Never reload out from under her: a running timer or a half-typed
+        // number would be lost. The update lands on the next quiet launch.
+        if (this.state.running || Object.keys(this.state.drafts || {}).length) return;
         this._reloaded = true;
         location.reload();
-      });
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', this._onCtrl);
     }
 
     // A timer left running survives leaving the app: we recorded the moment it
@@ -1532,6 +1540,9 @@ class Component extends DCLogic {
     document.removeEventListener('visibilitychange', this._wake);
     window.removeEventListener('focus', this._wake);
     window.removeEventListener('online', this._wake);
+    if (this._onCtrl && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.removeEventListener('controllerchange', this._onCtrl);
+    }
   }
 
   // ── timer, measured against the wall clock rather than counted in ticks

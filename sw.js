@@ -44,6 +44,19 @@ self.addEventListener('message', (ev) => {
 const isDoc = (req, url) =>
   req.mode === 'navigate' || /\.(html|dc\.html)$/.test(url.pathname) || url.pathname.endsWith('/');
 
+// A captive portal answers 200 with its own login page. Caching that would
+// brick the home-screen app, so a document only counts if it came back from
+// this origin, unredirected, as HTML.
+const looksLikeOurApp = (res) => {
+  if (!res || !res.ok || res.redirected || res.type === 'opaque') return false;
+  try { if (new URL(res.url).origin !== location.origin) return false; } catch (e) { return false; }
+  return /text\/html/i.test(res.headers.get('content-type') || '');
+};
+
+// Slow is as bad as broken on a phone: if the network hasn't answered in
+// 2.5s, serve the cached app and let the fetch finish in the background.
+const DOC_TIMEOUT = 2500;
+
 self.addEventListener('fetch', (ev) => {
   const req = ev.request;
   if (req.method !== 'GET') return;
@@ -57,16 +70,34 @@ self.addEventListener('fetch', (ev) => {
   if (/\.supabase\.co$/.test(url.hostname)) return;
   if (!sameOrigin && !isFont && !isLib) return;
 
-  // The app itself: try the network, fall back to the cache when offline.
+  // The app itself: try the network briefly, fall back to the cache for
+  // anything slower, offline, or not actually our HTML.
   if (sameOrigin && isDoc(req, url)) {
-    ev.respondWith(
-      fetch(req)
-        .then(res => {
-          if (res && res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
+    ev.respondWith((async () => {
+      const cached = caches.match(req);
+      const net = fetch(req).then(res => {
+        if (looksLikeOurApp(res)) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(req, copy));
           return res;
-        })
-        .catch(() => caches.match(req).then(hit => hit || caches.match('index.html')))
-    );
+        }
+        return null;
+      }).catch(() => null);
+
+      const timed = await Promise.race([
+        net,
+        new Promise(r => setTimeout(() => r('timeout'), DOC_TIMEOUT)),
+      ]);
+
+      if (timed && timed !== 'timeout') return timed;
+      // Slow or unusable: cache wins. The fetch above still updates the cache
+      // if it eventually succeeds, so the next launch is current.
+      const hit = await cached;
+      if (hit) return hit;
+      const net2 = await net;
+      if (net2) return net2;
+      return (await caches.match('index.html')) || Response.error();
+    })());
     return;
   }
 
