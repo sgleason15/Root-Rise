@@ -1,0 +1,67 @@
+{
+  "subjects": [
+    { "name": "Social Studies" },
+    { "name": "Bible Study" },
+    { "name": "Reading" },
+    { "name": "Science" },
+    { "name": "Math" },
+    { "name": "French Reading" },
+    { "name": "French Writing" },
+    { "name": "Writing" }
+  ],
+  "days": [
+    {
+      "date": "2026-09-07",
+      "replace": true,
+      "lessons": []
+    },
+    {
+      "date": "2026-09-08",
+      "replace": true,
+      "lessons": [
+        { "subject": "Social Studies", "ref": "First Day of School Activities", "mins": 45 },
+        { "subject": "Bible Study", "ref": "8.2", "mins": 25 },
+        { "subject": "Reading", "ref": "Lesson 7", "mins": 10 },
+        { "subject": "Science", "ref": "Lesson 1", "mins": 15 }
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "replace": true,
+      "lessons": [
+        { "subject": "Math", "ref": "8.2", "mins": 45 },
+        { "subject": "French Reading", "ref": "Page 6 and 7", "mins": 15 },
+        { "subject": "French Writing", "ref": "Writing practice", "mins": 20 },
+        { "subject": "Science", "ref": "Lesson 2", "mins": 15 }
+      ],
+      "activities": ["Zoo"]
+    },
+    {
+      "date": "2026-09-10",
+      "replace": true,
+      "lessons": [
+        { "subject": "Bible Study", "ref": "7.3", "mins": 30 },
+        { "subject": "Reading", "ref": "Lesson 8", "mins": 20 },
+        { "subject": "Writing", "ref": "Lessons DP, BR", "mins": 15 }
+      ],
+      "activities": ["Nature walk"]
+    },
+    {
+      "date": "2026-09-11",
+      "replace": true,
+      "lessons": [
+        { "subject": "Math", "ref": "8.3", "mins": 15 },
+        { "subject": "Math", "ref": "8.4", "mins": 15 },
+        { "subject": "French Writing", "ref": "Writing practice", "mins": 15 },
+        { "subject": "Science", "ref": "Lesson 3", "mins": 15 }
+      ]
+    }
+  ],
+  "positions": [
+    { "subject": "Math", "next": "9.1" },
+    { "subject": "Science", "next": "Lesson 4" },
+    { "subject": "Reading", "next": "Lesson 9" },
+    { "subject": "Writing", "next": "NM" },
+    { "subject": "French Reading", "next": "Page 9" }
+  ]
+}
